@@ -113,7 +113,7 @@ export default function LoginPage() {
                 const saveResult = await userService.saveUser(userData);
 
                 if (saveResult.success) {
-                    console.log("Login successful!");
+                    console.log("Login successful!", saveResult);
                     navigate("/dashboard"); // Redirect to dashboard
                 } else {
                     setError("Login successful but failed to save user data");

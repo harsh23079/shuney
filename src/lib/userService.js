@@ -1,4 +1,4 @@
-import { db } from "../../firebase/firebase-config";
+import { db } from "../firebase/firebase-config";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export const userService = {

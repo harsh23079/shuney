@@ -1,4 +1,4 @@
-import { auth } from "../../firebase/firebase-config";
+import { auth } from "../firebase/firebase-config";
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 
 class PhoneAuthService {
