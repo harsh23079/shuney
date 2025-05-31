@@ -35,7 +35,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen relative flex items-center justify-center">
+    <div className="min-h-screen relative flex items-center justify-center overflow-x-clip">
       {/* Background */}
       <div
         className="absolute inset-0 bg-cover bg-center"
