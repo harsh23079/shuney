@@ -8,6 +8,7 @@ import {
     ChevronDown,
     Search,
     Phone,
+    X,
 } from "lucide-react";
 import { phoneAuthService } from "../lib/phoneAuth";
 import { userService } from "../lib/userService";
@@ -40,6 +41,11 @@ export default function LoginPage() {
     // Country data from API
     const [countries, setCountries] = useState([]);
     const [loadingCountries, setLoadingCountries] = useState(true);
+    
+    // Country search state
+    const [countrySearchTerm, setCountrySearchTerm] = useState("");
+    const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+    const [filteredCountries, setFilteredCountries] = useState([]);
 
     // Fetch countries from REST Countries API
     useEffect(() => {
@@ -68,6 +74,7 @@ export default function LoginPage() {
                     .sort((a, b) => a.name.localeCompare(b.name));
 
                 setCountries(processedCountries);
+                setFilteredCountries(processedCountries);
             } catch (error) {
                 console.error("Failed to fetch countries:", error);
                 // Fallback to popular countries if API fails
@@ -114,6 +121,7 @@ export default function LoginPage() {
                     },
                 ];
                 setCountries(fallbackCountries);
+                setFilteredCountries(fallbackCountries);
             } finally {
                 setLoadingCountries(false);
             }
@@ -121,6 +129,21 @@ export default function LoginPage() {
 
         fetchCountries();
     }, []);
+
+    // Filter countries based on search term
+    useEffect(() => {
+        if (!countrySearchTerm.trim()) {
+            setFilteredCountries(countries);
+        } else {
+            const filtered = countries.filter(
+                (country) =>
+                    country.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) ||
+                    country.dialCode.includes(countrySearchTerm) ||
+                    country.code.toLowerCase().includes(countrySearchTerm.toLowerCase())
+            );
+            setFilteredCountries(filtered);
+        }
+    }, [countrySearchTerm, countries]);
 
     // Handle form input changes
     const handleChange = (e) => {
@@ -137,12 +160,20 @@ export default function LoginPage() {
             phoneNumber: "", // Clear phone number when country changes
         }));
         setError("");
+        setIsCountryDropdownOpen(false);
+        setCountrySearchTerm("");
     };
 
     // Handle occupation select changes
     const handleOccupationChange = (value) => {
         setFormData((prev) => ({ ...prev, occupation: value }));
         setError("");
+    };
+
+    // Clear country search
+    const clearCountrySearch = () => {
+        setCountrySearchTerm("");
+        setFilteredCountries(countries);
     };
 
     // Validate phone number based on selected country
@@ -277,6 +308,110 @@ export default function LoginPage() {
 
     const currentCountry = getCurrentCountry();
 
+    // Custom Country Selector Component
+    const CountrySelector = () => (
+        <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 z-10 flex items-center">
+                {loadingCountries ? (
+                    <div className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"></div>
+                ) : (
+                    <img
+                        src={currentCountry.flagUrl}
+                        alt={currentCountry.name}
+                        className="w-5 h-4 object-cover rounded-sm"
+                        onError={(e) => {
+                            e.target.style.display = "none";
+                        }}
+                    />
+                )}
+            </div>
+            <button
+                type="button"
+                onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
+                className="w-full pl-10 pr-10 py-3 text-left bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 flex items-center justify-between"
+                disabled={isLoading || loadingCountries}
+            >
+                <span className="text-gray-900">
+                    {currentCountry.name} ({currentCountry.dialCode})
+                </span>
+                <ChevronDown className="h-4 w-4 text-gray-400" />
+            </button>
+            
+            {isCountryDropdownOpen && (
+                <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-hidden">
+                    {/* Search Input */}
+                    <div className="p-3 border-b border-gray-200">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search countries..."
+                                value={countrySearchTerm}
+                                onChange={(e) => setCountrySearchTerm(e.target.value)}
+                                className="w-full text-black pl-10 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                autoFocus
+                            />
+                            {countrySearchTerm && (
+                                <button
+                                    type="button"
+                                    onClick={clearCountrySearch}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    
+                    {/* Countries List */}
+                    <div className="overflow-y-auto max-h-48">
+                        {filteredCountries.length > 0 ? (
+                            filteredCountries.map((country) => (
+                                <button
+                                    key={country.code}
+                                    type="button"
+                                    onClick={() => handleCountryCodeChange(country.dialCode)}
+                                    className={`w-full px-3 py-2 text-left hover:bg-gray-100 flex items-center gap-2 ${
+                                        formData.countryCode === country.dialCode
+                                            ? "bg-orange-50 text-orange-700"
+                                            : "text-gray-900"
+                                    }`}
+                                >
+                                    <img
+                                        src={country.flagUrl}
+                                        alt={country.name}
+                                        className="w-5 h-4 object-cover rounded-sm"
+                                        onError={(e) => {
+                                            e.target.style.display = "none";
+                                        }}
+                                    />
+                                    <span className="text-sm">
+                                        {country.name} ({country.dialCode})
+                                    </span>
+                                </button>
+                            ))
+                        ) : (
+                            <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                                No countries found
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+            
+            {/* Overlay to close dropdown when clicking outside */}
+            {isCountryDropdownOpen && (
+                <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => {
+                        setIsCountryDropdownOpen(false);
+                        setCountrySearchTerm("");
+                    }}
+                />
+            )}
+        </div>
+    );
+
     return (
         <div className="min-h-screen relative flex items-center justify-center overflow-x-clip">
             <div
@@ -353,7 +488,7 @@ export default function LoginPage() {
                                 </div>
                             </div>
 
-                            {/* Country Code Selection */}
+                            {/* Country Code Selection with Search */}
                             <div className="space-y-2">
                                 <Label
                                     htmlFor="countryCode"
@@ -361,53 +496,7 @@ export default function LoginPage() {
                                 >
                                     Country
                                 </Label>
-                                <div className="relative">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 z-10 flex items-center">
-                                        {loadingCountries ? (
-                                            <div className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"></div>
-                                        ) : (
-                                            <img
-                                                src={currentCountry.flagUrl}
-                                                alt={currentCountry.name}
-                                                className="w-5 h-4 object-cover rounded-sm"
-                                                onError={(e) => {
-                                                    e.target.style.display = "none";
-                                                }}
-                                            />
-                                        )}
-                                    </div>
-                                    <Select
-                                        onValueChange={handleCountryCodeChange}
-                                        value={formData.countryCode}
-                                        disabled={isLoading || loadingCountries}
-                                    >
-                                        <SelectTrigger className="pl-10 py-3">
-                                            <SelectValue placeholder="Select country" />
-                                        </SelectTrigger>
-                                        <SelectContent className="max-h-60">
-                                            {countries.map((country) => (
-                                                <SelectItem
-                                                    key={country.code}
-                                                    value={country.dialCode}
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <img
-                                                            src={country.flagUrl}
-                                                            alt={country.name}
-                                                            className="w-5 h-4 object-cover rounded-sm"
-                                                            onError={(e) => {
-                                                                e.target.style.display = "none";
-                                                            }}
-                                                        />
-                                                        <span className="text-sm">
-                                                            {country.name} ({country.dialCode})
-                                                        </span>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                                <CountrySelector />
                             </div>
 
                             {/* Phone Number Input */}
@@ -534,8 +623,7 @@ export default function LoginPage() {
                                 disabled={isLoading || otp.length !== 6}
                             >
                                 {isLoading ? "Verifying..." : "Verify OTP"}
-                   
-
+        
                             </Button>
 
                             <div className="text-center">
