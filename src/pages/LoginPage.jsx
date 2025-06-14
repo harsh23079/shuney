@@ -7,6 +7,7 @@ import {
     Briefcase,
     ChevronDown,
     Search,
+    Phone,
 } from "lucide-react";
 import { phoneAuthService } from "../lib/phoneAuth";
 import { userService } from "../lib/userService";
@@ -35,12 +36,9 @@ export default function LoginPage() {
     const [isOtpSent, setIsOtpSent] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-    const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
 
     // Country data from API
     const [countries, setCountries] = useState([]);
-    const [filteredCountries, setFilteredCountries] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
     const [loadingCountries, setLoadingCountries] = useState(true);
 
     // Fetch countries from REST Countries API
@@ -70,7 +68,6 @@ export default function LoginPage() {
                     .sort((a, b) => a.name.localeCompare(b.name));
 
                 setCountries(processedCountries);
-                setFilteredCountries(processedCountries);
             } catch (error) {
                 console.error("Failed to fetch countries:", error);
                 // Fallback to popular countries if API fails
@@ -117,7 +114,6 @@ export default function LoginPage() {
                     },
                 ];
                 setCountries(fallbackCountries);
-                setFilteredCountries(fallbackCountries);
             } finally {
                 setLoadingCountries(false);
             }
@@ -125,22 +121,6 @@ export default function LoginPage() {
 
         fetchCountries();
     }, []);
-
-    // Filter countries based on search
-    useEffect(() => {
-        if (!searchTerm) {
-            setFilteredCountries(countries);
-        } else {
-            const filtered = countries.filter(
-                (country) =>
-                    country.name
-                        .toLowerCase()
-                        .includes(searchTerm.toLowerCase()) ||
-                    country.dialCode.includes(searchTerm)
-            );
-            setFilteredCountries(filtered);
-        }
-    }, [searchTerm, countries]);
 
     // Handle form input changes
     const handleChange = (e) => {
@@ -154,10 +134,8 @@ export default function LoginPage() {
         setFormData((prev) => ({
             ...prev,
             countryCode: dialCode,
-            phoneNumber: "",
+            phoneNumber: "", // Clear phone number when country changes
         }));
-        setIsCountryDropdownOpen(false);
-        setSearchTerm("");
         setError("");
     };
 
@@ -375,6 +353,64 @@ export default function LoginPage() {
                                 </div>
                             </div>
 
+                            {/* Country Code Selection */}
+                            <div className="space-y-2">
+                                <Label
+                                    htmlFor="countryCode"
+                                    className="text-gray-700 font-medium"
+                                >
+                                    Country
+                                </Label>
+                                <div className="relative">
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 z-10 flex items-center">
+                                        {loadingCountries ? (
+                                            <div className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"></div>
+                                        ) : (
+                                            <img
+                                                src={currentCountry.flagUrl}
+                                                alt={currentCountry.name}
+                                                className="w-5 h-4 object-cover rounded-sm"
+                                                onError={(e) => {
+                                                    e.target.style.display = "none";
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                    <Select
+                                        onValueChange={handleCountryCodeChange}
+                                        value={formData.countryCode}
+                                        disabled={isLoading || loadingCountries}
+                                    >
+                                        <SelectTrigger className="pl-10 py-3">
+                                            <SelectValue placeholder="Select country" />
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-60">
+                                            {countries.map((country) => (
+                                                <SelectItem
+                                                    key={country.code}
+                                                    value={country.dialCode}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <img
+                                                            src={country.flagUrl}
+                                                            alt={country.name}
+                                                            className="w-5 h-4 object-cover rounded-sm"
+                                                            onError={(e) => {
+                                                                e.target.style.display = "none";
+                                                            }}
+                                                        />
+                                                        <span className="text-sm">
+                                                            {country.name} ({country.dialCode})
+                                                        </span>
+                                                    </div>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            {/* Phone Number Input */}
                             <div className="space-y-2">
                                 <Label
                                     htmlFor="phoneNumber"
@@ -382,156 +418,14 @@ export default function LoginPage() {
                                 >
                                     Phone Number
                                 </Label>
-                                <div className="flex">
-                                    {/* Country Code Dropdown */}
-                                    <div className="relative">
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setIsCountryDropdownOpen(
-                                                    !isCountryDropdownOpen
-                                                )
-                                            }
-                                            className="flex items-center px-3 py-3 bg-gray-50 border border-gray-300 rounded-l-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors min-w-[100px]"
-                                            disabled={
-                                                isLoading || loadingCountries
-                                            }
-                                        >
-                                            {loadingCountries ? (
-                                                <div className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"></div>
-                                            ) : (
-                                                <>
-                                                    <img
-                                                        src={
-                                                            currentCountry.flagUrl
-                                                        }
-                                                        alt={
-                                                            currentCountry.name
-                                                        }
-                                                        className="w-6 h-4 mr-2 object-cover rounded-sm"
-                                                        onError={(e) => {
-                                                            e.target.style.display =
-                                                                "none";
-                                                            e.target.nextSibling.style.display =
-                                                                "inline";
-                                                        }}
-                                                    />
-                                                    <span className="text-lg mr-2 hidden">
-                                                        {
-                                                            currentCountry.flagEmoji
-                                                        }
-                                                    </span>
-                                                    <span className="text-sm font-medium text-gray-700 mr-1">
-                                                        {
-                                                            currentCountry.dialCode
-                                                        }
-                                                    </span>
-                                                    <ChevronDown className="h-4 w-4 text-gray-400" />
-                                                </>
-                                            )}
-                                        </button>
-
-                                        {/* Dropdown Menu */}
-                                        {isCountryDropdownOpen &&
-                                            !loadingCountries && (
-                                                <div className="absolute top-full left-0 mt-1 w-80 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-80 overflow-hidden">
-                                                    {/* Search Input */}
-                                                    <div className="p-3 border-b border-gray-200">
-                                                        <div className="relative">
-                                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                                            <input
-                                                                type="text"
-                                                                placeholder="Search countries..."
-                                                                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                                                value={
-                                                                    searchTerm
-                                                                }
-                                                                onChange={(e) =>
-                                                                    setSearchTerm(
-                                                                        e.target
-                                                                            .value
-                                                                    )
-                                                                }
-                                                            />
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Countries List */}
-                                                    <div className="max-h-60 overflow-y-auto">
-                                                        {filteredCountries.length >
-                                                        0 ? (
-                                                            filteredCountries.map(
-                                                                (country) => (
-                                                                    <button
-                                                                        key={
-                                                                            country.code
-                                                                        }
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                            handleCountryCodeChange(
-                                                                                country.dialCode
-                                                                            )
-                                                                        }
-                                                                        className="w-full flex items-center px-4 py-3 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none text-left"
-                                                                    >
-                                                                        <img
-                                                                            src={
-                                                                                country.flagUrl
-                                                                            }
-                                                                            alt={
-                                                                                country.name
-                                                                            }
-                                                                            className="w-6 h-4 mr-3 object-cover rounded-sm"
-                                                                            onError={(
-                                                                                e
-                                                                            ) => {
-                                                                                e.target.style.display =
-                                                                                    "none";
-                                                                                e.target.nextSibling.style.display =
-                                                                                    "inline";
-                                                                            }}
-                                                                        />
-                                                                        <span className="text-lg mr-3 hidden">
-                                                                            {
-                                                                                country.flagEmoji
-                                                                            }
-                                                                        </span>
-                                                                        <div className="flex-1 min-w-0">
-                                                                            <div className="text-sm font-medium text-gray-900 truncate">
-                                                                                {
-                                                                                    country.name
-                                                                                }
-                                                                            </div>
-                                                                            <div className="text-sm text-gray-500">
-                                                                                {
-                                                                                    country.dialCode
-                                                                                }
-                                                                            </div>
-                                                                        </div>
-                                                                        {formData.countryCode ===
-                                                                            country.dialCode && (
-                                                                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                                                        )}
-                                                                    </button>
-                                                                )
-                                                            )
-                                                        ) : (
-                                                            <div className="px-4 py-8 text-center text-gray-500">
-                                                                No countries
-                                                                found
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-                                    </div>
-
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     <Input
                                         id="phoneNumber"
                                         name="phoneNumber"
                                         type="tel"
                                         placeholder="Enter phone number"
-                                        className="pl-3 py-3 rounded-l-none border-l-0 focus:border-l"
+                                        className="pl-10 py-3"
                                         value={formData.phoneNumber}
                                         onChange={handleChange}
                                         required
@@ -539,8 +433,7 @@ export default function LoginPage() {
                                     />
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1">
-                                    Enter your phone number without the country
-                                    code
+                                    Enter your phone number without the country code
                                 </p>
                             </div>
 
@@ -641,6 +534,8 @@ export default function LoginPage() {
                                 disabled={isLoading || otp.length !== 6}
                             >
                                 {isLoading ? "Verifying..." : "Verify OTP"}
+                   
+
                             </Button>
 
                             <div className="text-center">
@@ -667,13 +562,6 @@ export default function LoginPage() {
                 </div>
             </div>
 
-            {/* Overlay to close dropdown when clicking outside */}
-            {isCountryDropdownOpen && (
-                <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setIsCountryDropdownOpen(false)}
-                />
-            )}
         </div>
     );
 }
