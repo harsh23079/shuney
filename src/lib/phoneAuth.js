@@ -33,9 +33,7 @@ class PhoneAuthService {
             }
 
             // Format phone number (assuming Indian numbers)
-            const formattedPhone = phoneNumber.startsWith("+91")
-                ? phoneNumber
-                : `+91${phoneNumber}`;
+            const formattedPhone = `${phoneNumber}`;
 
             // Send OTP
             this.confirmationResult = await signInWithPhoneNumber(
