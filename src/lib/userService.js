@@ -9,15 +9,15 @@ export const userService = {
 
             const userDoc = {
                 uid: userData.uid,
-                username: userData.username,
-                phoneNumber: userData.phoneNumber,
+                firstName: userData.username,
+                mobile: userData.phoneNumber,
                 occupation: userData.occupation,
                 createdAt: serverTimestamp(),
                 lastLogin: serverTimestamp(),
             };
 
             await setDoc(userRef, userDoc, { merge: true });
-            console.log("User data saved successfully");
+            console.log("User data saved successfully", userDoc);
             return { success: true };
         } catch (error) {
             console.error("Error saving user data:", error);
@@ -32,8 +32,10 @@ export const userService = {
             const userSnap = await getDoc(userRef);
 
             if (userSnap.exists()) {
+                console.log("User found successfully", userSnap);
                 return { success: true, userData: userSnap.data() };
             } else {
+                console.log("User not found", userSnap);
                 return { success: false, error: "User not found" };
             }
         } catch (error) {
@@ -53,6 +55,8 @@ export const userService = {
                 },
                 { merge: true }
             );
+
+            console.log("update login successfully");
 
             return { success: true };
         } catch (error) {
