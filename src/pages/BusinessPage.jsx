@@ -20,6 +20,7 @@ import {
     orderBy,
     limit,
     query,
+    where
 } from "firebase/firestore";
 import { db } from "../firebase/firebase-config";
 
@@ -35,8 +36,8 @@ export default function BusinessPage() {
 
   const accountHash = import.meta.env.VITE_ACCOUNT_HASH;
 
-  // ✅ Fixed useCallback with proper error handling and refs
-  const fetchCategories = useCallback(async () => {
+  // ✅ Updated to fetch from creatortopics-new collection
+  const fetchBusinessTopics = useCallback(async () => {
     // Prevent multiple simultaneous fetches
     if (isFetchingRef.current) {
       console.log('Fetch already in progress, skipping...');
@@ -48,11 +49,12 @@ export default function BusinessPage() {
     setError(null);
 
     try {
-      console.log('Starting to fetch categories...');
+      console.log('Starting to fetch business topics...');
       
       const q = query(
-        collection(db, "categories"),
-        orderBy("createdAt", "desc"),
+        collection(db, "creatortopics-new"),
+        where("subCategoryId", "==", "default"),
+        orderBy("createdAt", "asc"),
         limit(20)
       );
 
@@ -68,10 +70,11 @@ export default function BusinessPage() {
         const data = doc.data();
         return {
           id: doc.id,
-          categoryId: data.categoryId || `cat_${index}`,
-          categoryName: data.categoryName || `Category ${index + 1}`,
-          bigImageId: data.bigImageId || null,
-          smallImageId: data.smallImageId || null,
+          categoryId: data.categoryId || "default",
+          subCategoryId: data.subCategoryId || "default",
+          creatorTopicId: data.creatorTopicId || `topic_${index}`,
+          creatorTopicName: data.creatorTopicName || `Business ${index + 1}`,
+          thumbnailId: data.bigImageId || null,
           createdAt: data.createdAt,
           updatedAt: data.updatedAt,
           rating: (Math.random() * 2 + 3).toFixed(1),
@@ -79,12 +82,12 @@ export default function BusinessPage() {
         };
       });
 
-      console.log('Processed data:', fetched);
+      console.log('Processed business topics:', fetched);
       setBusinesses(fetched);
       setImageErrors(new Set()); // Reset image errors
 
       if (fetched.length === 0) {
-        setError("No categories found in database");
+        setError("No business topics found in database");
       }
     } catch (err) {
       console.error('Fetch error:', err);
@@ -102,7 +105,7 @@ export default function BusinessPage() {
   // ✅ useEffect with cleanup
   useEffect(() => {
     mountedRef.current = true;
-    fetchCategories();
+    fetchBusinessTopics();
     
     // Cleanup function
     return () => {
@@ -124,7 +127,7 @@ export default function BusinessPage() {
       `https://imagedelivery.net/${accountHash}/${imageId}/public`
     ];
     
-    return formats[2]; // Start with the first format
+    return formats[2]; // Start with the public format
   }, [accountHash]);
 
   // ✅ Handle image errors
@@ -138,7 +141,7 @@ export default function BusinessPage() {
     
     if (currentSrc.includes('/public')) {
       // Try without the type parameter
-      img.src = `https://imagedelivery.net/${imageId}`;
+      img.src = `https://imagedelivery.net/${accountHash}/${imageId}`;
     } else if (!currentSrc.includes('placeholder')) {
       // Final fallback to placeholder
       img.src = "/placeholder.svg";
@@ -149,19 +152,21 @@ export default function BusinessPage() {
   const handleRefresh = useCallback(() => {
     if (!isFetchingRef.current) {
       console.log('Manual refresh triggered');
-      fetchCategories();
+      fetchBusinessTopics();
     }
-  }, [fetchCategories]);
+  }, [fetchBusinessTopics]);
 
   // ✅ Handle card click
   const handleCardClick = useCallback((business) => {
     console.log('Clicked business:', {
       id: business.id,
+      creatorTopicId: business.creatorTopicId,
+      creatorTopicName: business.creatorTopicName,
       categoryId: business.categoryId,
-      categoryName: business.categoryName
+      subCategoryId: business.subCategoryId
     });
     // Add your navigation logic here
-    // For example: navigate(`/business/${business.categoryId}`);
+    // For example: navigate(`/business/${business.creatorTopicId}`);
   }, []);
 
   // Loading state
@@ -170,7 +175,7 @@ export default function BusinessPage() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-4" />
-          <p className="text-gray-400">Loading business categories...</p>
+          <p className="text-gray-400">Loading business topics...</p>
           <p className="text-gray-500 text-sm mt-2">This may take a moment</p>
         </div>
       </div>
@@ -189,7 +194,8 @@ export default function BusinessPage() {
               <ul className="mt-2 space-y-1">
                 <li>• Check your internet connection</li>
                 <li>• Verify Firebase configuration</li>
-                <li>• Check if the "categories" collection exists</li>
+                <li>• Check if the "creatortopics-new" collection exists</li>
+                <li>• Ensure documents have subCategoryId = "default"</li>
               </ul>
             </div>
           </div>
@@ -227,7 +233,7 @@ export default function BusinessPage() {
               </Button>
             </Link>
             <h1 className="text-3xl font-bold">
-              <span className="text-orange-500">Business</span> Categories
+              <span className="text-orange-500">Business</span> Topics
             </h1>
             <Button 
               onClick={handleRefresh}
@@ -245,7 +251,7 @@ export default function BusinessPage() {
           </div>
           <div className="flex items-center justify-between mt-2">
             <p className="text-gray-400">
-              {businesses.length} categories available
+              {businesses.length} business topics available
             </p>
             {error && businesses.length > 0 && (
               <p className="text-yellow-400 text-sm">
@@ -261,9 +267,9 @@ export default function BusinessPage() {
         {businesses.length === 0 && !isLoading ? (
           <div className="text-center py-12">
             <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-8">
-              <p className="text-gray-400 text-lg mb-4">No business categories found.</p>
+              <p className="text-gray-400 text-lg mb-4">No business topics found.</p>
               <p className="text-gray-500 text-sm mb-6">
-                Make sure you have categories in your Firestore database.
+                Make sure you have documents in your "creatortopics-new" collection with subCategoryId = "default".
               </p>
               <Button 
                 onClick={handleRefresh}
@@ -293,19 +299,19 @@ export default function BusinessPage() {
                 onClick={() => handleCardClick(business)}
               >
                 <CardContent className="p-0">
-                  <div className="relative h-48 bg-gradient-to-br from-blue-500 to-purple-500">
+                  <div className="relative h-fit bg-gradient-to-br from-blue-500 to-purple-500">
                     <img
-                      src={getImageUrl(business.smallImageId || business.bigImageId)}
-                      alt={business.categoryName || `Category ${index + 1}`}
-                      className="w-full h-full object-cover opacity-80 group-hover:opacity-90 transition-opacity"
-                      onError={(e) => handleImageError(business.smallImageId || business.bigImageId, e)}
+                      src={getImageUrl(business.thumbnailId)}
+                      alt={business.creatorTopicName || `Business ${index + 1}`}
+                      className="w-fit h-fit object-fit opacity-90 group-hover:opacity-90 transition-opacity"
+                      onError={(e) => handleImageError(business.thumbnailId, e)}
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-black/40" />
                     <div className="absolute top-4 left-4">
-                      <Badge className="bg-orange-500 text-white font-bold text-lg px-3 py-1">
+                      {/* <Badge className="bg-orange-500 text-white font-bold text-lg px-3 py-1">
                         {index + 1}
-                      </Badge>
+                      </Badge> */}
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button size="lg" className="bg-orange-500 hover:bg-orange-600 rounded-full">
@@ -315,7 +321,7 @@ export default function BusinessPage() {
                     </div>
                     
                     {/* Image error indicator */}
-                    {imageErrors.has(business.smallImageId) && (
+                    {imageErrors.has(business.thumbnailId) && (
                       <div className="absolute top-4 right-4">
                         <Badge variant="outline" className="bg-red-500/20 text-red-400 border-red-500/50 text-xs">
                           Image Error
@@ -324,22 +330,6 @@ export default function BusinessPage() {
                     )}
                   </div>
 
-                  <div className="p-6">
-                    <h3 className="font-bold text-lg mb-2 text-white group-hover:text-orange-400 transition-colors">
-                      {business.categoryName || `Category ${index + 1}`}
-                    </h3>
-                   
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        {/* <Star className="w-4 h-4 text-yellow-500 fill-current" /> */}
-                        <span className="text-sm font-medium">{business.rating}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-gray-400">
-                        {/* <TrendingUp className="w-4 h-4" /> */}
-                        {/* <span className="text-sm">{business.students}</span> */}
-                      </div>
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             ))}
