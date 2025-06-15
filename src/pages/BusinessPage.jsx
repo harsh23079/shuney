@@ -26,7 +26,6 @@ export default function BusinessPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [imageErrors, setImageErrors] = useState(new Set());
-    const [noNewResults, setNoNewResults] = useState(false);
 
     // Use ref to prevent infinite loops
     const isFetchingRef = useRef(false);
@@ -81,26 +80,8 @@ export default function BusinessPage() {
                 };
             });
 
-            if (businesses.length > 0) {
-                const isSameData =
-                    fetched.length === businesses.length &&
-                    fetched.every(
-                        (item, index) => item.id === businesses[index]?.id
-                    );
-
-                if (isSameData) {
-                    console.log("No new results detected, showing message");
-                    setNoNewResults(true);
-                    setTimeout(() => setNoNewResults(false), 3000);
-                } else {
-                    setBusinesses(fetched);
-                    setImageErrors(new Set());
-                }
-            } else {
-                // First load - just set the data
-                setBusinesses(fetched);
-                setImageErrors(new Set());
-            }
+            setBusinesses(fetched);
+            setImageErrors(new Set());
 
             if (fetched.length === 0) {
                 setError("No business topics found in database");
@@ -388,17 +369,6 @@ export default function BusinessPage() {
                             <span className="text-gray-300 text-sm">
                                 Refreshing...
                             </span>
-                        </div>
-                    </div>
-                )}
-
-                {noNewResults && (
-                    <div className="fixed top-24 left-1/2 transform -translate-x-1/2 bg-orange-600 border border-white text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-pulse">
-                        <div className="flex items-center gap-2">
-                            <RefreshCw className="w-4 h-4" />
-                            <p className="text-sm font-medium">
-                                No result found..!
-                            </p>
                         </div>
                     </div>
                 )}
