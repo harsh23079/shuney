@@ -54,7 +54,7 @@ export default function ReelPage() {
     const containerRef = useRef(null);
 
     const REELS_LIMIT = 10;
-    const PRELOAD_DISTANCE = 2; // Videos to preload around current video
+    const PRELOAD_DISTANCE = 2;
 
     // Memoized video URLs with validation
     const reelsWithUrls = useMemo(() => {
@@ -349,7 +349,7 @@ export default function ReelPage() {
         (index, event) => {
             // Prevent propagation to avoid conflicts with other click handlers
             event.stopPropagation();
-            
+
             const video = videoRefs.current[index];
             if (!video || !videoStates[index]?.loaded) return;
 
@@ -375,7 +375,10 @@ export default function ReelPage() {
                     // Fallback: try muted playback
                     video.muted = true;
                     video.play().catch((fallbackError) => {
-                        console.error("Fallback play also failed:", fallbackError);
+                        console.error(
+                            "Fallback play also failed:",
+                            fallbackError
+                        );
                     });
                 });
             } else {
@@ -432,14 +435,17 @@ export default function ReelPage() {
     }, []);
 
     // Track video play/pause events
-    const handleVideoPlay = useCallback((index) => {
-        setPausedVideos((prev) => ({
-            ...prev,
-            [index]: false,
-        }));
-        // Pause all other videos when one starts playing
-        pauseAllVideosExcept(index);
-    }, [pauseAllVideosExcept]);
+    const handleVideoPlay = useCallback(
+        (index) => {
+            setPausedVideos((prev) => ({
+                ...prev,
+                [index]: false,
+            }));
+            // Pause all other videos when one starts playing
+            pauseAllVideosExcept(index);
+        },
+        [pauseAllVideosExcept]
+    );
 
     const handleVideoPause = useCallback((index) => {
         setPausedVideos((prev) => ({
@@ -723,12 +729,15 @@ export default function ReelPage() {
                                             width: "350px",
                                             height: "700px",
                                         }}
-                                        onClick={(e) => handleVideoClick(index, e)}
+                                        onClick={(e) =>
+                                            handleVideoClick(index, e)
+                                        }
                                     >
                                         <video
                                             ref={(el) => {
                                                 if (el) {
-                                                    videoRefs.current[index] = el;
+                                                    videoRefs.current[index] =
+                                                        el;
                                                 }
                                             }}
                                             loop
@@ -745,8 +754,12 @@ export default function ReelPage() {
                                             onCanPlay={() =>
                                                 handleVideoCanPlay(index)
                                             }
-                                            onPlay={() => handleVideoPlay(index)}
-                                            onPause={() => handleVideoPause(index)}
+                                            onPlay={() =>
+                                                handleVideoPlay(index)
+                                            }
+                                            onPause={() =>
+                                                handleVideoPause(index)
+                                            }
                                         />
 
                                         {/* Loading overlay */}
@@ -772,27 +785,28 @@ export default function ReelPage() {
                                         )}
 
                                         {/* Pause overlay - Enhanced */}
-                                        {isVideoPaused && currentIndex === index && (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-                                                <div className="bg-black/70 text-white p-6 rounded-full shadow-lg">
-                                                    <svg
-                                                        width="48"
-                                                        height="48"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                    >
-                                                        <path
-                                                            d="M8 5V19L19 12L8 5Z"
-                                                            fill="currentColor"
-                                                        />
-                                                    </svg>
+                                        {isVideoPaused &&
+                                            currentIndex === index && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                                                    <div className="bg-black/70 text-white p-6 rounded-full shadow-lg">
+                                                        <svg
+                                                            width="48"
+                                                            height="48"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                        >
+                                                            <path
+                                                                d="M8 5V19L19 12L8 5Z"
+                                                                fill="currentColor"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                    <div className="absolute bottom-20 text-white text-sm opacity-75">
+                                                        Tap to play
+                                                    </div>
                                                 </div>
-                                                <div className="absolute bottom-20 text-white text-sm opacity-75">
-                                                    Tap to play
-                                                </div>
-                                            </div>
-                                        )}
+                                            )}
 
                                         {/* Content overlay */}
                                         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
@@ -803,6 +817,7 @@ export default function ReelPage() {
                                                 </h2>
                                             )}
                                             {/* Creator Info */}
+
                                             {reel.creatorName && (
                                                 <div className="mb-3">
                                                     <button
@@ -815,8 +830,8 @@ export default function ReelPage() {
                                                         className="flex items-center gap-2 text-white hover:text-orange-500 transition-colors"
                                                     >
                                                         <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                                            {reel?._createdBy
-                                                                ?.photoURL ? (
+                                                            {reel._createdBy
+                                                                .photoURL ? (
                                                                 <img
                                                                     src={
                                                                         reel
@@ -865,8 +880,6 @@ export default function ReelPage() {
                                                             />
                                                         </svg>
                                                     </button>
-
-                                                    
 
                                                     {showCreatorInfo[index] && (
                                                         <div className="mt-2 p-3 bg-black/70 rounded-lg backdrop-blur-sm">
