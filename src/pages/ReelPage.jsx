@@ -344,32 +344,64 @@ export default function ReelPage() {
         }));
     }, []);
 
-    // Enhanced video click handler
+    // Enhanced video click handler with improved pause/play logic
     const handleVideoClick = useCallback(
-        (index) => {
+        (index, event) => {
+            // Prevent propagation to avoid conflicts with other click handlers
+            event.stopPropagation();
+            
             const video = videoRefs.current[index];
             if (!video || !videoStates[index]?.loaded) return;
 
             setUserInteracted(true);
 
-            setPausedVideos((prev) => {
-                const isCurrentlyPaused = prev[index] || video.paused;
+            // Check current video state
+            const isCurrentlyPaused = video.paused || pausedVideos[index];
 
-                if (isCurrentlyPaused) {
-                    // Resume video
-                    video.muted = globalMuted;
-                    video.volume = globalMuted ? 0 : volume / 100;
-                    video.play().catch(console.error);
-                    return { ...prev, [index]: false };
-                } else {
-                    // Pause video
-                    video.pause();
-                    return { ...prev, [index]: true };
-                }
-            });
+            if (isCurrentlyPaused) {
+                // Resume/Play video
+                setPausedVideos((prev) => ({
+                    ...prev,
+                    [index]: false,
+                }));
+
+                // Set volume and mute state
+                video.muted = globalMuted;
+                video.volume = globalMuted ? 0 : volume / 100;
+
+                // Play video with error handling
+                video.play().catch((error) => {
+                    console.error("Error playing video:", error);
+                    // Fallback: try muted playback
+                    video.muted = true;
+                    video.play().catch((fallbackError) => {
+                        console.error("Fallback play also failed:", fallbackError);
+                    });
+                });
+            } else {
+                // Pause video
+                video.pause();
+                setPausedVideos((prev) => ({
+                    ...prev,
+                    [index]: true,
+                }));
+            }
         },
-        [globalMuted, volume, videoStates]
+        [globalMuted, volume, videoStates, pausedVideos]
     );
+
+    // Function to pause all videos except the current one
+    const pauseAllVideosExcept = useCallback((exceptIndex) => {
+        videoRefs.current.forEach((video, index) => {
+            if (video && index !== exceptIndex && !video.paused) {
+                video.pause();
+                setPausedVideos((prev) => ({
+                    ...prev,
+                    [index]: true,
+                }));
+            }
+        });
+    }, []);
 
     // Back navigation
     const handleBack = useCallback(() => {
@@ -396,6 +428,23 @@ export default function ReelPage() {
         setVideoStates((prev) => ({
             ...prev,
             [index]: { ...prev[index], error: true, loading: false },
+        }));
+    }, []);
+
+    // Track video play/pause events
+    const handleVideoPlay = useCallback((index) => {
+        setPausedVideos((prev) => ({
+            ...prev,
+            [index]: false,
+        }));
+        // Pause all other videos when one starts playing
+        pauseAllVideosExcept(index);
+    }, [pauseAllVideosExcept]);
+
+    const handleVideoPause = useCallback((index) => {
+        setPausedVideos((prev) => ({
+            ...prev,
+            [index]: true,
         }));
     }, []);
 
@@ -470,7 +519,7 @@ export default function ReelPage() {
                         if (entry.isIntersecting) {
                             setCurrentIndex(index);
 
-                            // Auto-play logic
+                            // Auto-play logic - only if not manually paused
                             if (
                                 !pausedVideos[index] &&
                                 userInteracted &&
@@ -499,13 +548,13 @@ export default function ReelPage() {
                                 playVideo();
                             }
                         } else {
-                            // Pause and reset video when not visible
-                            video.pause();
+                            // Pause video when not visible
+                            if (!video.paused) {
+                                video.pause();
+                            }
+                            // Reset video when it goes out of view
                             video.currentTime = 0;
-                            setPausedVideos((prev) => ({
-                                ...prev,
-                                [index]: false,
-                            }));
+                            // Don't automatically reset pause state - let user control it
                         }
                     });
                 },
@@ -532,6 +581,7 @@ export default function ReelPage() {
         volume,
         userInteracted,
         videoStates,
+        pausedVideos,
     ]);
 
     // Cleanup on unmount
@@ -659,6 +709,7 @@ export default function ReelPage() {
                             }
 
                             const videoState = videoStates[index] || {};
+                            const isVideoPaused = pausedVideos[index] || false;
 
                             return (
                                 <div
@@ -672,13 +723,12 @@ export default function ReelPage() {
                                             width: "350px",
                                             height: "700px",
                                         }}
-                                        onClick={() => handleVideoClick(index)}
+                                        onClick={(e) => handleVideoClick(index, e)}
                                     >
                                         <video
                                             ref={(el) => {
                                                 if (el) {
-                                                    videoRefs.current[index] =
-                                                        el;
+                                                    videoRefs.current[index] = el;
                                                 }
                                             }}
                                             loop
@@ -695,6 +745,8 @@ export default function ReelPage() {
                                             onCanPlay={() =>
                                                 handleVideoCanPlay(index)
                                             }
+                                            onPlay={() => handleVideoPlay(index)}
+                                            onPause={() => handleVideoPause(index)}
                                         />
 
                                         {/* Loading overlay */}
@@ -719,26 +771,28 @@ export default function ReelPage() {
                                             </div>
                                         )}
 
-                                        {/* Pause overlay */}
-                                        {pausedVideos[index] &&
-                                            currentIndex === index && (
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                                                    <div className="bg-black/70 text-white p-4 rounded-full">
-                                                        <svg
-                                                            width="40"
-                                                            height="40"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                        >
-                                                            <path
-                                                                d="M8 5V19L19 12L8 5Z"
-                                                                fill="currentColor"
-                                                            />
-                                                        </svg>
-                                                    </div>
+                                        {/* Pause overlay - Enhanced */}
+                                        {isVideoPaused && currentIndex === index && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+                                                <div className="bg-black/70 text-white p-6 rounded-full shadow-lg">
+                                                    <svg
+                                                        width="48"
+                                                        height="48"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <path
+                                                            d="M8 5V19L19 12L8 5Z"
+                                                            fill="currentColor"
+                                                        />
+                                                    </svg>
                                                 </div>
-                                            )}
+                                                <div className="absolute bottom-20 text-white text-sm opacity-75">
+                                                    Tap to play
+                                                </div>
+                                            </div>
+                                        )}
 
                                         {/* Content overlay */}
                                         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
@@ -749,7 +803,6 @@ export default function ReelPage() {
                                                 </h2>
                                             )}
                                             {/* Creator Info */}
-
                                             {reel.creatorName && (
                                                 <div className="mb-3">
                                                     <button
@@ -812,6 +865,8 @@ export default function ReelPage() {
                                                             />
                                                         </svg>
                                                     </button>
+
+                                                    
 
                                                     {showCreatorInfo[index] && (
                                                         <div className="mt-2 p-3 bg-black/70 rounded-lg backdrop-blur-sm">
