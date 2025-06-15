@@ -33,7 +33,7 @@ export default function BusinessPage() {
   const isFetchingRef = useRef(false);
   const mountedRef = useRef(true);
 
-  const accountHash = "6Yp_nDDnQX6yVf_UZnXA5g";
+  const accountHash = import.meta.env.VITE_ACCOUNT_HASH;
 
   // ✅ Fixed useCallback with proper error handling and refs
   const fetchCategories = useCallback(async () => {
