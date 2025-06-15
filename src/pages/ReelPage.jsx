@@ -635,22 +635,6 @@ export default function ReelPage() {
                 >
                     {globalMuted ? "🔇" : "🔊"}
                 </button>
-                <div className="bg-black/70 p-2 rounded-full">
-                    <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={volume}
-                        onChange={(e) =>
-                            handleVolumeChange(parseInt(e.target.value))
-                        }
-                        className="w-16 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
-                        style={{
-                            writingMode: "bt-lr",
-                            WebkitAppearance: "slider-vertical",
-                        }}
-                    />
-                </div>
             </div>
 
             {/* Main Content */}
