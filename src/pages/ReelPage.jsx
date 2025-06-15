@@ -273,8 +273,8 @@ export default function ReelPage() {
 
     return (
         <div className="min-h-screen bg-black text-white relative">
-            {/* Header */}
-            <div className="flex items-center gap-3 p-4 bg-black relative z-10">
+            {/* Fixed Header */}
+            <div className="fixed top-18 left-0 right-0 flex items-center gap-3 p-4 bg-black z-30 ">
                 <button
                     onClick={handleBack}
                     className="text-white hover:text-orange-500 transition-colors p-1"
@@ -344,8 +344,8 @@ export default function ReelPage() {
                 </button>
             </div>
 
-            {/* Main */}
-            <div className="flex justify-center items-start min-h-[calc(100vh-60px)] bg-black">
+            {/* Main Content - with top padding to account for fixed header */}
+            <div className="flex justify-center items-start min-h-screen bg-black pt-20">
                 <div className="relative flex flex-col items-center w-full max-w-md">
                     {reels.map((reel, index) => (
                         <div
