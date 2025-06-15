@@ -193,9 +193,6 @@ export default function BusinessPage() {
               <p>Possible issues:</p>
               <ul className="mt-2 space-y-1">
                 <li>• Check your internet connection</li>
-                <li>• Verify Firebase configuration</li>
-                <li>• Check if the "creatortopics-new" collection exists</li>
-                <li>• Ensure documents have subCategoryId = "default"</li>
               </ul>
             </div>
           </div>
@@ -268,9 +265,6 @@ export default function BusinessPage() {
           <div className="text-center py-12">
             <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-8">
               <p className="text-gray-400 text-lg mb-4">No business topics found.</p>
-              <p className="text-gray-500 text-sm mb-6">
-                Make sure you have documents in your "creatortopics-new" collection with subCategoryId = "default".
-              </p>
               <Button 
                 onClick={handleRefresh}
                 disabled={isLoading}
