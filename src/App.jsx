@@ -9,6 +9,7 @@ import LoginPage from "./pages/LoginPage";
 import ReelPage from "./pages/ReelPage";
 import "./App.css";
 import LevelsPage from "./pages/Business/LevelsPage";
+import LevelVideosPage from "./pages/Business/levelVideosPage";
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/business" element={<BusinessPage />} />
                         <Route path="/levels/:creatorTopicId" element={<LevelsPage />} />
+                        <Route path="/level-videos/:levelId?" element={<LevelVideosPage/>}/>
                         <Route
                             path="/categories"
                             element={<CategoriesPage />}
