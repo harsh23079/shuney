@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route,
+    Outlet,
+} from "react-router-dom";
 import { Header } from "./components/Header";
 import { Navigation } from "./components/Navigation";
 import HomePage from "./pages/HomePage";
@@ -10,8 +15,7 @@ import ReelPage from "./pages/ReelPage";
 import "./App.css";
 import LevelsPage from "./pages/Business/LevelsPage";
 import SubcategoriesPage from "./pages/HomeLevels/SubCategoriesPage";
-
-import { Outlet } from "react-router-dom";
+import LevelVideosPage from "./pages/Business/levelVideosPage";
 import AllTopicsPage from "./pages/HomeLevels/AllTopics";
 
 function LevelLayout() {
@@ -26,11 +30,18 @@ function App() {
                 <main className="pb-20">
                     <Routes>
                         <Route path="/" element={<HomePage />} />
-                        <Route path="/business" element={<BusinessPage />} />
-                        <Route
-                            path="/levels/:creatorTopicId"
-                            element={<LevelsPage />}
-                        />
+
+                        <Route path="/business" element={<LevelLayout />}>
+                            <Route index element={<BusinessPage />} />
+                            <Route
+                                path="levels/:creatorTopicId"
+                                element={<LevelsPage />}
+                            />
+                            <Route
+                                path="level-videos/:levelId?"
+                                element={<LevelVideosPage />}
+                            />
+                        </Route>
                         <Route
                             path="/level/categories"
                             element={<LevelLayout />}

@@ -22,7 +22,7 @@ import {
 import { db } from "../../firebase/firebase-config";
 
 export default function BusinessPage() {
-    const navigate=useNavigate();
+    const navigate = useNavigate();
     const [businesses, setBusinesses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -161,16 +161,19 @@ export default function BusinessPage() {
     }, [fetchBusinessTopics]);
 
     // ✅ Handle card click
-    const handleCardClick = useCallback((business) => {
-        console.log("Clicked business:", {
-            id: business.id,
-            creatorTopicId: business.creatorTopicId,
-            creatorTopicName: business.creatorTopicName,
-            categoryId: business.categoryId,
-            subCategoryId: business.subCategoryId,
-        });
-         navigate(`/levels/${business.creatorTopicId}`);
-    }, [navigate]);
+    const handleCardClick = useCallback(
+        (business) => {
+            console.log("Clicked business:", {
+                id: business.id,
+                creatorTopicId: business.creatorTopicId,
+                creatorTopicName: business.creatorTopicName,
+                categoryId: business.categoryId,
+                subCategoryId: business.subCategoryId,
+            });
+            navigate(`/business/levels/${business.creatorTopicId}`);
+        },
+        [navigate]
+    );
 
     // Loading state
     if (isLoading && businesses.length === 0) {

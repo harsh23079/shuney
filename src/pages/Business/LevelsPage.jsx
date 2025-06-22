@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import {
@@ -30,6 +30,7 @@ export default function LevelsPage() {
     const [error, setError] = useState(null);
     const [imageErrors, setImageErrors] = useState(new Set());
     const [topicName, setTopicName] = useState("");
+    const navigate=useNavigate();
 
     // Use ref to prevent infinite loops
     const isFetchingRef = useRef(false);
@@ -193,7 +194,8 @@ const fetchLevels = useCallback(async () => {
         });
         // Add your navigation logic here
         // For example: navigate(`/level/${level.levelId}`);
-    }, []);
+    navigate(`/business/level-videos/${level.levelId}?page=1`);
+    }, [navigate]);
 
     // Render levels section
     const renderLevelsSection = useCallback((sectionLevels, sectionTitle, icon) => {
