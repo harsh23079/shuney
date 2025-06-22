@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
-import { Button } from "../components/ui/Button";
-import { Badge } from "../components/ui/Badge";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "../../components/ui/Button";
+import { Badge } from "../../components/ui/Badge";
 import {
     ArrowLeft,
     Play,
@@ -9,7 +9,7 @@ import {
     Loader2,
     RefreshCw,
 } from "lucide-react";
-import { Card, CardContent } from "../components/ui/Card";
+import { Card, CardContent } from "../../components/ui/Card";
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
     collection,
@@ -19,9 +19,10 @@ import {
     query,
     where,
 } from "firebase/firestore";
-import { db } from "../firebase/firebase-config";
+import { db } from "../../firebase/firebase-config";
 
 export default function BusinessPage() {
+    const navigate=useNavigate();
     const [businesses, setBusinesses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -168,9 +169,8 @@ export default function BusinessPage() {
             categoryId: business.categoryId,
             subCategoryId: business.subCategoryId,
         });
-        // Add your navigation logic here
-        // For example: navigate(`/business/${business.creatorTopicId}`);
-    }, []);
+         navigate(`/levels/${business.creatorTopicId}`);
+    }, [navigate]);
 
     // Loading state
     if (isLoading && businesses.length === 0) {
