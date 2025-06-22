@@ -10,7 +10,7 @@ export function Navigation() {
         { href: "/", label: "Feed", icon: Home },
         { href: "/business", label: "Business", icon: Briefcase },
         { href: "/reel", label: "Reels", icon: Play },
-        { href: "/level", label: "Levels", icon: BarChart3 },
+        { href: "/level/categories", label: "Levels", icon: BarChart3 },
         { href: "/creator", label: "Creators", icon: Users },
     ];
 

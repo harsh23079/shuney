@@ -3,12 +3,20 @@ import { Header } from "./components/Header";
 import { Navigation } from "./components/Navigation";
 import HomePage from "./pages/HomePage";
 import BusinessPage from "./pages/Business/BusinessPage";
-import CategoriesPage from "./pages/CategoriesPage";
+import CategoriesPage from "./pages/HomeLevels/CategoriesPage";
 import ServicesPage from "./pages/ServicesPage";
 import LoginPage from "./pages/LoginPage";
 import ReelPage from "./pages/ReelPage";
 import "./App.css";
 import LevelsPage from "./pages/Business/LevelsPage";
+import SubcategoriesPage from "./pages/HomeLevels/SubCategoriesPage";
+
+import { Outlet } from "react-router-dom";
+import AllTopicsPage from "./pages/HomeLevels/AllTopics";
+
+function LevelLayout() {
+    return <Outlet />;
+}
 
 function App() {
     return (
@@ -19,11 +27,27 @@ function App() {
                     <Routes>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/business" element={<BusinessPage />} />
-                        <Route path="/levels/:creatorTopicId" element={<LevelsPage />} />
                         <Route
-                            path="/categories"
-                            element={<CategoriesPage />}
+                            path="/levels/:creatorTopicId"
+                            element={<LevelsPage />}
                         />
+                        <Route
+                            path="/level/categories"
+                            element={<LevelLayout />}
+                        >
+                            <Route index element={<CategoriesPage />} />
+                            {/* /level/categories */}
+                            <Route
+                                path=":categoryId"
+                                element={<SubcategoriesPage />}
+                            />{" "}
+                            {/* /level/categories/:categoryId */}
+                            <Route
+                                path=":categoryId/subcategories/:subCategoryId"
+                                element={<AllTopicsPage />}
+                            />{" "}
+                            {/* /level/categories/:categoryId/subcategories/:subCategoryId */}
+                        </Route>
                         <Route path="/services" element={<ServicesPage />} />
                         <Route path="/reel" element={<ReelPage />} />
                         <Route path="/login" element={<LoginPage />} />
