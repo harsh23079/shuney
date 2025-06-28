@@ -17,6 +17,10 @@ import LevelsPage from "./pages/Business/LevelsPage";
 import SubcategoriesPage from "./pages/HomeLevels/SubCategoriesPage";
 import LevelVideosPage from "./pages/Business/levelVideosPage";
 import AllTopicsPage from "./pages/HomeLevels/AllTopics";
+import CreatorPlaylist from "./pages/Creators/CreatorPlaylist";
+import TopicGrid from "./pages/Creators/TopicGrid";
+import PlaylistGrid from "./pages/Creators/PlaylistGrid";
+import VideoPlayer from "./pages/Creators/VideoPlayer";
 
 function LevelLayout() {
     return <Outlet />;
@@ -58,6 +62,21 @@ function App() {
                                 element={<AllTopicsPage />}
                             />{" "}
                             {/* /level/categories/:categoryId/subcategories/:subCategoryId */}
+                        </Route>
+                        <Route path="/creators" element={<LevelLayout />}>
+                            <Route index element={<CreatorPlaylist />} />
+                            <Route
+                                path=":creatorId/topics"
+                                element={<TopicGrid />}
+                            />
+                            <Route
+                                path=":creatorId/topics/:topicId/playlists"
+                                element={<PlaylistGrid />}
+                            />
+                            <Route
+                                path=":creatorId/topics/:topicId/playlists/:playlistId/videos"
+                                element={<VideoPlayer />}
+                            />
                         </Route>
                         <Route path="/services" element={<ServicesPage />} />
                         <Route path="/reel" element={<ReelPage />} />
