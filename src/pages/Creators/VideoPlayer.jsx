@@ -751,7 +751,7 @@ const VideoPlayer = () => {
                                     </div>
 
                                     {/* Navigation Buttons */}
-                                    <div className="flex items-center gap-3 mt-4">
+                                    {/* <div className="flex items-center gap-3 mt-4">
                                         <Button
                                             onClick={handlePrevVideo}
                                             disabled={currentVideoIndex === 0}
@@ -775,7 +775,7 @@ const VideoPlayer = () => {
                                             Next
                                             <SkipForward className="w-4 h-4 ml-2" />
                                         </Button>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                         ) : (
@@ -802,7 +802,7 @@ const VideoPlayer = () => {
                                 </Badge>
                             </div>
 
-                            <div className="space-y-3 max-h-[550px] overflow-y-auto">
+                            <div className="space-y-3 max-h-[490px] overflow-y-auto">
                                 {videos.map((video, index) => (
                                     <Card
                                         key={video.playlistVideoId}
