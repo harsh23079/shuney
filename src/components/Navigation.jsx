@@ -11,7 +11,7 @@ export function Navigation() {
         { href: "/business", label: "Business", icon: Briefcase },
         { href: "/reel", label: "Reels", icon: Play },
         { href: "/level/categories", label: "Levels", icon: BarChart3 },
-        { href: "/creator", label: "Creators", icon: Users },
+        { href: "/creators", label: "Creators", icon: Users },
     ];
 
     return (
