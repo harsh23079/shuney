@@ -863,6 +863,7 @@ export default function LevelVideosPage() {
                                         </Badge>
                                     </div>
                                 </div>
+                                
                             </div>
                         ) : (
                             <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
