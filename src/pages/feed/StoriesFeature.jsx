@@ -239,7 +239,7 @@ const StoriesFeature = () => {
     }
     return (
         <div className="w-full">
-            <div className="bg-gray-900/30 py-4 px-4 border-b border-gray-800">
+            <div className="bg-gray-900/30 py-4 px-4 ">
                 <div className=" max-w-90 justify-center flex  space-x-4 overflow-x-auto scrollbar-hide">
                     {stories.map((story) => (
                         <div

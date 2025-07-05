@@ -21,6 +21,7 @@ import CreatorPlaylist from "./pages/Creators/CreatorPlaylist";
 import TopicGrid from "./pages/Creators/TopicGrid";
 import PlaylistGrid from "./pages/Creators/PlaylistGrid";
 import VideoPlayer from "./pages/Creators/VideoPlayer";
+import FeedPage from "./pages/FeedPage";
 
 function LevelLayout() {
     return <Outlet />;
@@ -34,6 +35,7 @@ function App() {
                 <main className="pb-20">
                     <Routes>
                         <Route path="/" element={<HomePage />} />
+                        <Route path="/feed" element={<FeedPage />} />
 
                         <Route path="/business" element={<LevelLayout />}>
                             <Route index element={<BusinessPage />} />

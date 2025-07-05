@@ -7,7 +7,7 @@ export function Navigation() {
     const location = useLocation();
 
     const navItems = [
-        { href: "/", label: "Feed", icon: Home },
+        { href: "/feed", label: "Feed", icon: Home },
         { href: "/business", label: "Business", icon: Briefcase },
         { href: "/reel", label: "Reels", icon: Play },
         { href: "/level/categories", label: "Levels", icon: BarChart3 },

@@ -3,8 +3,6 @@ import { Play, TrendingUp, Users, Star } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
-import StoriesFeature from "./feed/StoriesFeature";
-import PostFeed from "./feed/PostFeed";
 
 export default function HomePage() {
     const featuredCategories = [
@@ -41,9 +39,7 @@ export default function HomePage() {
     return (
         <div className="min-h-screen bg-black text-white">
             {/* Hero Section */}
-            <StoriesFeature/>
             <section className="relative overflow-hidden bg-gradient-to-br from-black via-gray-900 to-black">
-                <PostFeed/>
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&h=800&fit=crop')] bg-cover bg-center opacity-10" />
                 <div className="relative container mx-auto px-4 py-20 lg:py-32">
                     <div className="max-w-4xl mx-auto text-center">

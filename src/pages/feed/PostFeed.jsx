@@ -85,8 +85,8 @@ const PostFeed = () => {
   return (
     <div className="min-h-screen bg-gray-950 text-white p-4">
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-white mb-2 mt-10">
             Latest <span className="text-orange-500">Business</span> Posts
           </h2>
           <p className="text-gray-400">Stay updated with our latest business insights and tips</p>
