@@ -88,6 +88,14 @@ export function Footer() {
                                     About Us
                                 </Link>
                             </li>
+                            <li>
+                                <Link
+                                    to="/about"
+                                    className="text-gray-400 hover:text-orange-500 transition-colors duration-200 text-sm"
+                                >
+                                    Terms & Conditions
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 

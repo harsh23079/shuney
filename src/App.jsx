@@ -25,6 +25,7 @@ import PlaylistGrid from "./pages/Creators/PlaylistGrid";
 import VideoPlayer from "./pages/Creators/VideoPlayer";
 import FeedPage from "./pages/FeedPage";
 import AboutPage from "./pages/AboutPage";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 function LevelLayout() {
     return <Outlet />;
@@ -40,6 +41,7 @@ function FooterWrapper() {
 function App() {
     return (
         <Router>
+            <ScrollToTop />
             <div className="min-h-screen bg-black text-white flex flex-col">
                 <Header />
                 <main className="flex-1 pb-20">
