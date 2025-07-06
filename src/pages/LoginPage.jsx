@@ -416,12 +416,12 @@ export default function LoginPage() {
         <div className="min-h-screen relative flex items-center justify-center overflow-x-clip">
             <div
                 className="absolute inset-0 bg-cover bg-center"
-                style={{
-                    backgroundImage:
-                        "url('/placeholder.svg?height=1080&width=1920')",
-                    filter: "blur(8px)",
-                    transform: "scale(1.1)",
-                }}
+                // style={{
+                //     backgroundImage:
+                //         "url('/placeholder.svg?height=1080&width=1920')",
+                //     filter: "blur(8px)",
+                //     transform: "scale(1.1)",
+                // }}
             />
             <div className="absolute inset-0 bg-black/70" />
 

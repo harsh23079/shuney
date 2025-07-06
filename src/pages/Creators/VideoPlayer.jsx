@@ -500,7 +500,7 @@ const VideoPlayer = () => {
                             <ArrowLeft className="w-5 h-5" />
                         </Button>
                         <div>
-                            <h1 className="text-2xl font-bold">
+                            <h1 className="text-2xl font-bold text-orange-500">
                                 {playlist?.playlistName || "Playlist Videos"}
                             </h1>
                             <p className="text-gray-400 text-sm">
@@ -512,7 +512,7 @@ const VideoPlayer = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => setShowPlaylist(!showPlaylist)}
-                            className="ml-auto"
+                            className="ml-auto hover:text-orange-500"
                         >
                             <List className="w-4 h-4 mr-2" />
                             {showPlaylist ? "Hide" : "Show"} Playlist

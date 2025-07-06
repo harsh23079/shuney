@@ -145,7 +145,7 @@ const CreatorPlaylist = () => {
                             </Button>
                         </Link>
                         <h1 className="text-3xl font-bold">
-                            <span className="text-orange-500">Creator's</span>
+                            <span className="text-orange-500">Creator</span>'s
                         </h1>
                         <Button
                             onClick={handleRefresh}

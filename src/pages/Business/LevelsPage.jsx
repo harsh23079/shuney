@@ -12,13 +12,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/Card";
 import { useEffect, useState, useCallback, useRef } from "react";
-import {
-    collection,
-    getDocs,
-    orderBy,
-    query,
-    where,
-} from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "../../firebase/firebase-config";
 
 export default function LevelsPage() {
@@ -30,7 +24,7 @@ export default function LevelsPage() {
     const [error, setError] = useState(null);
     const [imageErrors, setImageErrors] = useState(new Set());
     const [topicName, setTopicName] = useState("");
-    const navigate=useNavigate();
+    const navigate = useNavigate();
 
     // Use ref to prevent infinite loops
     const isFetchingRef = useRef(false);
@@ -40,91 +34,97 @@ export default function LevelsPage() {
 
     // Fetch levels from levels-new collection
     // Alternative approach: Fetch all and filter in JavaScript
-const fetchLevels = useCallback(async () => {
-    if (isFetchingRef.current) {
-        console.log("Fetch already in progress, skipping...");
-        return;
-    }
-
-    isFetchingRef.current = true;
-    setIsLoading(true);
-    setError(null);
-
-    try {
-        console.log("Starting to fetch levels for creatorTopicId:", creatorTopicId);
-
-        // Fetch all documents from the collection
-        const q = query(collection(db, "levels-new"));
-        const snapshot = await getDocs(q);
-        console.log("Fetched snapshot:", snapshot.size, "documents");
-
-        if (!mountedRef.current) {
-            console.log("Component unmounted, aborting fetch");
+    const fetchLevels = useCallback(async () => {
+        if (isFetchingRef.current) {
+            console.log("Fetch already in progress, skipping...");
             return;
         }
 
-        // Filter and process documents in JavaScript
-        const allLevels = snapshot.docs.map((doc, index) => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                levelId: data.levelId || doc.id,
-                levelName: data.levelName || `Level ${index + 1}`,
-                categoryId: data.categoryId || "",
-                subCategoryId: data.subCategoryId || "",
-                creatorTopicId: data.creatorTopicId || "",
-                levelCreatorId: data.levelCreatorId || "",
-                sectionType: data.sectionType || "What",
-                thumbnailId: data.thumbnailId || null,
-                createdAt: data.createdAt,
-                updatedAt: data.updatedAt,
-            };
-        });
+        isFetchingRef.current = true;
+        setIsLoading(true);
+        setError(null);
 
-        // Filter by creatorTopicId and sort by createdAt
-        const fetched = allLevels
-            .filter(level => level.creatorTopicId === creatorTopicId)
-            .sort((a, b) => {
-                if (!a.createdAt || !b.createdAt) return 0;
-                return a.createdAt.toMillis() - b.createdAt.toMillis();
+        try {
+            console.log(
+                "Starting to fetch levels for creatorTopicId:",
+                creatorTopicId
+            );
+
+            // Fetch all documents from the collection
+            const q = query(collection(db, "levels-new"));
+            const snapshot = await getDocs(q);
+            console.log("Fetched snapshot:", snapshot.size, "documents");
+
+            if (!mountedRef.current) {
+                console.log("Component unmounted, aborting fetch");
+                return;
+            }
+
+            // Filter and process documents in JavaScript
+            const allLevels = snapshot.docs.map((doc, index) => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    levelId: data.levelId || doc.id,
+                    levelName: data.levelName || `Level ${index + 1}`,
+                    categoryId: data.categoryId || "",
+                    subCategoryId: data.subCategoryId || "",
+                    creatorTopicId: data.creatorTopicId || "",
+                    levelCreatorId: data.levelCreatorId || "",
+                    sectionType: data.sectionType || "What",
+                    thumbnailId: data.thumbnailId || null,
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt,
+                };
             });
 
-        // Re-index the levels after filtering
-        const indexedLevels = fetched.map((level, index) => ({
-            ...level,
-            levelName: level.levelName || `Level ${index + 1}`
-        }));
+            // Filter by creatorTopicId and sort by createdAt
+            const fetched = allLevels
+                .filter((level) => level.creatorTopicId === creatorTopicId)
+                .sort((a, b) => {
+                    if (!a.createdAt || !b.createdAt) return 0;
+                    return a.createdAt.toMillis() - b.createdAt.toMillis();
+                });
 
-        // Group levels by sectionType
-        const whatLevelsFiltered = indexedLevels.filter(level => level.sectionType === "What");
-        const howLevelsFiltered = indexedLevels.filter(level => level.sectionType === "How");
+            // Re-index the levels after filtering
+            const indexedLevels = fetched.map((level, index) => ({
+                ...level,
+                levelName: level.levelName || `Level ${index + 1}`,
+            }));
 
-        setLevels(indexedLevels);
-        setWhatLevels(whatLevelsFiltered);
-        setHowLevels(howLevelsFiltered);
-        setImageErrors(new Set());
+            // Group levels by sectionType
+            const whatLevelsFiltered = indexedLevels.filter(
+                (level) => level.sectionType === "What"
+            );
+            const howLevelsFiltered = indexedLevels.filter(
+                (level) => level.sectionType === "How"
+            );
 
-        if (indexedLevels.length === 0) {
-            setError("No levels found for this topic");
+            setLevels(indexedLevels);
+            setWhatLevels(whatLevelsFiltered);
+            setHowLevels(howLevelsFiltered);
+            setImageErrors(new Set());
+
+            if (indexedLevels.length === 0) {
+                setError("No levels found for this topic");
+            }
+
+            // Set topic name from first level or use creatorTopicId
+            if (indexedLevels.length > 0) {
+                setTopicName(creatorTopicId);
+            }
+        } catch (err) {
+            console.error("Fetch error:", err);
+            if (mountedRef.current) {
+                setError(`Error fetching levels: ${err.message}`);
+            }
+        } finally {
+            if (mountedRef.current) {
+                setIsLoading(false);
+            }
+            isFetchingRef.current = false;
         }
-
-        // Set topic name from first level or use creatorTopicId
-        if (indexedLevels.length > 0) {
-            setTopicName(creatorTopicId);
-        }
-
-    } catch (err) {
-        console.error("Fetch error:", err);
-        if (mountedRef.current) {
-            setError(`Error fetching levels: ${err.message}`);
-        }
-    } finally {
-        if (mountedRef.current) {
-            setIsLoading(false);
-        }
-        isFetchingRef.current = false;
-    }
-}, [creatorTopicId]);
+    }, [creatorTopicId]);
     // useEffect with cleanup
     useEffect(() => {
         mountedRef.current = true;
@@ -184,102 +184,115 @@ const fetchLevels = useCallback(async () => {
     }, [fetchLevels]);
 
     // Handle level click
-    const handleLevelClick = useCallback((level) => {
-        console.log("Clicked level:", {
-            id: level.id,
-            levelId: level.levelId,
-            levelName: level.levelName,
-            sectionType: level.sectionType,
-            creatorTopicId: level.creatorTopicId,
-        });
-        // Add your navigation logic here
-        // For example: navigate(`/level/${level.levelId}`);
-    navigate(`/business/level-videos/${level.levelId}?page=1`);
-    }, [navigate]);
+    const handleLevelClick = useCallback(
+        (level) => {
+            console.log("Clicked level:", {
+                id: level.id,
+                levelId: level.levelId,
+                levelName: level.levelName,
+                sectionType: level.sectionType,
+                creatorTopicId: level.creatorTopicId,
+            });
+            // Add your navigation logic here
+            // For example: navigate(`/level/${level.levelId}`);
+            navigate(`/business/level-videos/${level.levelId}?page=1`);
+        },
+        [navigate]
+    );
 
     // Render levels section
-    const renderLevelsSection = useCallback((sectionLevels, sectionTitle, icon) => {
-        if (sectionLevels.length === 0) return null;
+    const renderLevelsSection = useCallback(
+        (sectionLevels, sectionTitle, icon) => {
+            if (sectionLevels.length === 0) return null;
 
-        return (
-            <div className="mb-12">
-                <div className="flex items-center gap-3 mb-6">
-                    {icon}
-                    <h2 className="text-2xl font-bold text-white">{sectionTitle}</h2>
-                    <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">
-                        {sectionLevels.length} levels
-                    </Badge>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {sectionLevels.map((level, index) => (
-                        <Card
-                            key={level.id}
-                            className="group bg-gray-900/50 border-gray-700 hover:border-orange-500 transition-all duration-300 overflow-hidden hover:scale-105 cursor-pointer"
-                            onClick={() => handleLevelClick(level)}
-                        >
-                            <CardContent className="p-0">
-                                <div className="relative h-48 bg-gradient-to-br from-orange-500 to-red-500">
-                                    <img
-                                        src={getImageUrl(level.thumbnailId)}
-                                        alt={level.levelName}
-                                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
-                                        onError={(e) =>
-                                            handleImageError(level.thumbnailId, e)
-                                        }
-                                        loading="lazy"
-                                    />
-                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
-                                    
-                                    {/* Level number badge */}
-                                    <div className="absolute top-4 left-4">
-                                        <Badge className="bg-orange-500 text-white font-bold text-sm px-3 py-1">
-                                            {index + 1}
-                                        </Badge>
-                                    </div>
+            return (
+                <div className="mb-12">
+                    <div className="flex items-center gap-3 mb-6">
+                        {icon}
+                        <h2 className="text-2xl font-bold text-white">
+                            {sectionTitle}
+                        </h2>
+                        <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">
+                            {sectionLevels.length} levels
+                        </Badge>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {sectionLevels.map((level, index) => (
+                            <Card
+                                key={level.id}
+                                className="group bg-gray-900/50 border-gray-700 hover:border-orange-500 transition-all duration-300 overflow-hidden hover:scale-105 cursor-pointer"
+                                onClick={() => handleLevelClick(level)}
+                            >
+                                <CardContent className="p-0">
+                                    <div className="relative h-48 bg-gradient-to-br from-orange-500 to-red-500">
+                                        <img
+                                            src={getImageUrl(level.thumbnailId)}
+                                            alt={level.levelName}
+                                            className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
+                                            onError={(e) =>
+                                                handleImageError(
+                                                    level.thumbnailId,
+                                                    e
+                                                )
+                                            }
+                                            loading="lazy"
+                                        />
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
 
-                                    {/* Play button overlay */}
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Button
-                                            size="lg"
-                                            className="bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg"
-                                        >
-                                            <Play className="w-5 h-5 mr-2" />
-                                            Start Learning
-                                        </Button>
-                                    </div>
-
-                                    {/* Image error indicator */}
-                                    {imageErrors.has(level.thumbnailId) && (
-                                        <div className="absolute top-4 right-4">
-                                            <Badge
-                                                variant="outline"
-                                                className="bg-red-500/20 text-red-400 border-red-500/50 text-xs"
-                                            >
-                                                Image Error
+                                        {/* Level number badge */}
+                                        <div className="absolute top-4 left-4">
+                                            <Badge className="bg-orange-500 text-white font-bold text-sm px-3 py-1">
+                                                {index + 1}
                                             </Badge>
                                         </div>
-                                    )}
-                                </div>
 
-                                {/* Level info */}
-                                <div className="p-4">
-                                    <h3 className="font-semibold text-white mb-2 line-clamp-2">
-                                        {level.levelName}
-                                    </h3>
-                                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                                        <Eye className="w-4 h-4" />
-                                        <span>Level {index + 1}</span>
-                                        <span>•</span>
-                                        <span className="capitalize">{level.sectionType}</span>
+                                        {/* Play button overlay */}
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button
+                                                size="lg"
+                                                className="bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg"
+                                            >
+                                                <Play className="w-5 h-5 mr-2" />
+                                                Start Learning
+                                            </Button>
+                                        </div>
+
+                                        {/* Image error indicator */}
+                                        {imageErrors.has(level.thumbnailId) && (
+                                            <div className="absolute top-4 right-4">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="bg-red-500/20 text-red-400 border-red-500/50 text-xs"
+                                                >
+                                                    Image Error
+                                                </Badge>
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
+
+                                    {/* Level info */}
+                                    <div className="p-4">
+                                        <h3 className="font-semibold text-white mb-2 line-clamp-2">
+                                            {level.levelName}
+                                        </h3>
+                                        <div className="flex items-center gap-2 text-sm text-gray-400">
+                                            <Eye className="w-4 h-4" />
+                                            <span>Level {index + 1}</span>
+                                            <span>•</span>
+                                            <span className="capitalize">
+                                                {level.sectionType}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
                 </div>
-            </div>
-        );
-    }, [getImageUrl, handleImageError, imageErrors, handleLevelClick]);
+            );
+        },
+        [getImageUrl, handleImageError, imageErrors, handleLevelClick]
+    );
 
     // Loading state
     if (isLoading && levels.length === 0) {
@@ -359,9 +372,13 @@ const fetchLevels = useCallback(async () => {
                         </Link>
                         <div>
                             <h1 className="text-3xl font-bold">
-                                {/* <span className="text-orange-500">{topicName}</span>{" "} */}
-                                Levels
+                                <span className="text-orange-500">Level</span>{" "}
+                                's
                             </h1>
+                            {/* <h1 className="text-3xl font-bold">
+                                <span className="text-orange-500">{topicName}</span>{" "} 
+                                Levels
+                            </h1> */}
                             <p className="text-gray-400 mt-1">
                                 Choose your learning path
                             </p>
@@ -390,13 +407,17 @@ const fetchLevels = useCallback(async () => {
                             {whatLevels.length > 0 && (
                                 <div className="flex items-center gap-2">
                                     <BookOpen className="w-4 h-4 text-blue-400" />
-                                    <span className="text-blue-400">{whatLevels.length} What</span>
+                                    <span className="text-blue-400">
+                                        {whatLevels.length} What
+                                    </span>
                                 </div>
                             )}
                             {howLevels.length > 0 && (
                                 <div className="flex items-center gap-2">
                                     <Wrench className="w-4 h-4 text-green-400" />
-                                    <span className="text-green-400">{howLevels.length} How</span>
+                                    <span className="text-green-400">
+                                        {howLevels.length} How
+                                    </span>
                                 </div>
                             )}
                         </div>
@@ -448,37 +469,40 @@ const fetchLevels = useCallback(async () => {
                     <>
                         {/* What Levels Section */}
                         {renderLevelsSection(
-                            whatLevels, 
-                            "What", 
+                            whatLevels,
+                            "What",
                             <BookOpen className="w-6 h-6 text-blue-400" />
                         )}
 
                         {/* How Levels Section */}
                         {renderLevelsSection(
-                            howLevels, 
-                            "How", 
+                            howLevels,
+                            "How",
                             <Wrench className="w-6 h-6 text-green-400" />
                         )}
 
                         {/* Empty state when no levels in either section */}
-                        {whatLevels.length === 0 && howLevels.length === 0 && levels.length === 0 && (
-                            <div className="text-center py-12">
-                                <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-8">
-                                    <p className="text-gray-400 text-lg mb-4">
-                                        No levels available yet.
-                                    </p>
-                                    <p className="text-gray-500 text-sm mb-6">
-                                        This topic doesn't have any learning levels created yet.
-                                    </p>
-                                    <Link to="/business">
-                                        <Button variant="outline">
-                                            <ArrowLeft className="w-4 h-4 mr-2" />
-                                            Back to Business Topics
-                                        </Button>
-                                    </Link>
+                        {whatLevels.length === 0 &&
+                            howLevels.length === 0 &&
+                            levels.length === 0 && (
+                                <div className="text-center py-12">
+                                    <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-8">
+                                        <p className="text-gray-400 text-lg mb-4">
+                                            No levels available yet.
+                                        </p>
+                                        <p className="text-gray-500 text-sm mb-6">
+                                            This topic doesn't have any learning
+                                            levels created yet.
+                                        </p>
+                                        <Link to="/business">
+                                            <Button variant="outline">
+                                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                                Back to Business Topics
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
                     </>
                 )}
 

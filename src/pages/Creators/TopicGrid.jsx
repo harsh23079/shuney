@@ -137,7 +137,7 @@ const TopicGrid = () => {
                             <ArrowLeft className="w-5 h-5" />
                         </Button>
                         <h1 className="text-3xl font-bold">
-                            <span className="text-orange-500">Topic's</span>
+                            <span className="text-orange-500">Topic</span>'s
                         </h1>
                         <Button
                             onClick={handleRefresh}

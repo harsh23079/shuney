@@ -572,7 +572,10 @@ export default function LevelVideosPage() {
                             <ArrowLeft className="w-5 h-5" />
                         </Button>
                         <div>
-                            <h1 className="text-2xl font-bold">Level Videos</h1>
+                            <h1 className="text-3xl font-bold">
+                                <span className="text-orange-500">Level</span>{" "}
+                                Videos
+                            </h1>
                             <p className="text-gray-400 text-sm">
                                 Page {currentPage} of{" "}
                                 {Math.max(
@@ -626,7 +629,7 @@ export default function LevelVideosPage() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setShowPlaylist(!showPlaylist)}
-                                className="ml-auto"
+                                className="ml-auto hover:text-orange-500"
                             >
                                 <List className="w-4 h-4 mr-2" />
                                 {showPlaylist ? "Hide" : "Show"} Playlist
@@ -863,7 +866,6 @@ export default function LevelVideosPage() {
                                         </Badge>
                                     </div>
                                 </div>
-                                
                             </div>
                         ) : (
                             <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
