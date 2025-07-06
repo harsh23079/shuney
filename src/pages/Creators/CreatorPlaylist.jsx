@@ -4,7 +4,7 @@ import { Button } from "../../components/ui/Button";
 import { ArrowLeft, Play, TrendingUp, Loader2, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/Card";
 import CreatorService from "../../lib/creatorService";
-import iconImg from "../../../public/image.png";
+import iconImg from "/image.png";
 
 const CreatorPlaylist = () => {
     const navigate = useNavigate();

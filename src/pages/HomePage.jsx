@@ -73,7 +73,7 @@ export default function HomePage() {
                                 <Play className="w-5 h-5 mr-2" />
                                 Watch Latest Video
                             </Button>
-                            <Link to="/categories">
+                            <Link to="level/categories">
                                 <Button
                                     size="lg"
                                     variant="outline"
@@ -134,7 +134,7 @@ export default function HomePage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {featuredCategories.map((category, index) => (
-                            <Link key={index} to="/categories">
+                            <Link key={index} to="/creators">
                                 <Card className="group bg-gray-900/50 border-gray-700 hover:border-orange-500 transition-all duration-300 overflow-hidden">
                                     <CardContent className="p-0">
                                         <div
