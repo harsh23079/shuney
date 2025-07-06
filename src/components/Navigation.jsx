@@ -19,7 +19,7 @@ export function Navigation() {
             <div className="flex items-center justify-around py-2">
                 {navItems.map((item) => {
                     const Icon = item.icon;
-                    const isActive = location.pathname === item.href;
+                    const isActive = location.pathname.startsWith(item.href);
 
                     return (
                         <Link
