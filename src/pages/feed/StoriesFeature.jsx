@@ -76,9 +76,19 @@ const StoriesFeature = () => {
     useEffect(() => {
         fetchStories();
         return () => {
-            clearInterval(progressInterval.current);
+            if (progressInterval.current) {
+                clearInterval(progressInterval.current);
+            }
         };
     }, []);
+
+    // Clear interval and reset progress when story or image changes
+    const clearProgressInterval = () => {
+        if (progressInterval.current) {
+            clearInterval(progressInterval.current);
+            progressInterval.current = null;
+        }
+    };
 
     const handleNextImageOrStory = () => {
         if (!selectedStory) return;
@@ -101,10 +111,19 @@ const StoriesFeature = () => {
         }
     };
 
+    // Progress interval effect - properly reset when story/image changes
     useEffect(() => {
-        if (!selectedStory || !isPlaying || !selectedStory.imageIds?.length)
-            return;
+        // Clear any existing interval
+        clearProgressInterval();
+        
+        // Reset progress to 0 when story or image changes
+        setProgress(0);
 
+        if (!selectedStory || !isPlaying || !selectedStory.imageIds?.length) {
+            return;
+        }
+
+        // Start new interval
         progressInterval.current = setInterval(() => {
             setProgress((prev) => {
                 if (prev >= 100) {
@@ -115,15 +134,15 @@ const StoriesFeature = () => {
             });
         }, 100);
 
-        return () => clearInterval(progressInterval.current);
+        return () => clearProgressInterval();
     }, [selectedStory?.id, isPlaying, currentImageIndex]);
-
-    useEffect(() => {
-        setProgress(0);
-    }, [currentImageIndex]);
 
     const openStory = (story) => {
         if (story?.imageIds?.length) {
+            // Clear any existing interval first
+            clearProgressInterval();
+            
+            // Set new story and reset all states
             setSelectedStory(story);
             setCurrentImageIndex(0);
             setProgress(0);
@@ -132,6 +151,7 @@ const StoriesFeature = () => {
     };
 
     const closeStory = () => {
+        clearProgressInterval();
         setSelectedStory(null);
         setCurrentImageIndex(0);
         setProgress(0);
@@ -139,6 +159,8 @@ const StoriesFeature = () => {
     };
 
     const goToPrevious = () => {
+        clearProgressInterval();
+        
         if (currentImageIndex > 0) {
             setCurrentImageIndex(currentImageIndex - 1);
         } else {
@@ -154,6 +176,8 @@ const StoriesFeature = () => {
     };
 
     const goToNext = () => {
+        clearProgressInterval();
+        
         if (
             selectedStory &&
             currentImageIndex < selectedStory.imageIds.length - 1
@@ -237,6 +261,7 @@ const StoriesFeature = () => {
             </div>
         );
     }
+
     return (
         <div className="w-full">
             <div className="bg-gray-900/30 py-4 px-4 ">
@@ -259,7 +284,7 @@ const StoriesFeature = () => {
                                             story._createdBy?.displayName ||
                                             "User"
                                         }
-                                        className="rounded-[50%]"
+                                        className="w-full h-full object-cover rounded-full"
                                         onError={handleImageError}
                                     />
                                 </div>
