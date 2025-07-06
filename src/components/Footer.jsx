@@ -15,9 +15,9 @@ export function Footer() {
         <footer className="bg-black border-t border-gray-800 text-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Main Footer Content */}
-                <div className="py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start text-center">
+                <div className="py-12 flex justify-between gap-8 items-start text-center">
                     {/* Brand Section */}
-                    <div className="space-y-4 flex flex-col items-center">
+                    <div className="space-y-4 flex flex-col">
                         <Link to="/" className="flex items-center space-x-2">
                             <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-xl">
                                 <Play className="w-6 h-6 text-white" />
@@ -31,33 +31,33 @@ export function Footer() {
                         </Link>
                         <p className="text-gray-400 text-sm leading-relaxed">
                             Empowering learners with comprehensive business
-                            skills and creative content. Start your journey to
-                            success today.
+                            skills <br></br> and creative content. Start your
+                            journey to success today.
                         </p>
-                        <div className="flex space-x-4 justify-center">
+                        <div className="flex space-x-4 ">
                             <a
-                                href="#"
+                                href="https://www.facebook.com/ShunyeOTT/"
                                 className="w-10 h-10 bg-gray-800 hover:bg-orange-500 rounded-full flex items-center justify-center transition-colors duration-200"
                                 aria-label="Facebook"
                             >
                                 <Facebook className="w-5 h-5" />
                             </a>
                             <a
-                                href="#"
+                                href="https://x.com/ShunyeOTT"
                                 className="w-10 h-10 bg-gray-800 hover:bg-orange-500 rounded-full flex items-center justify-center transition-colors duration-200"
                                 aria-label="Twitter"
                             >
                                 <Twitter className="w-5 h-5" />
                             </a>
                             <a
-                                href="#"
+                                href="https://www.instagram.com/shunyeott/"
                                 className="w-10 h-10 bg-gray-800 hover:bg-orange-500 rounded-full flex items-center justify-center transition-colors duration-200"
                                 aria-label="Instagram"
                             >
                                 <Instagram className="w-5 h-5" />
                             </a>
                             <a
-                                href="#"
+                                href="https://www.youtube.com/@ShunyeOTT"
                                 className="w-10 h-10 bg-gray-800 hover:bg-orange-500 rounded-full flex items-center justify-center transition-colors duration-200"
                                 aria-label="YouTube"
                             >

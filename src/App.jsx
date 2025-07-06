@@ -24,6 +24,7 @@ import TopicGrid from "./pages/Creators/TopicGrid";
 import PlaylistGrid from "./pages/Creators/PlaylistGrid";
 import VideoPlayer from "./pages/Creators/VideoPlayer";
 import FeedPage from "./pages/FeedPage";
+import AboutPage from "./pages/AboutPage";
 
 function LevelLayout() {
     return <Outlet />;
@@ -88,6 +89,7 @@ function App() {
                         <Route path="/services" element={<ServicesPage />} />
                         <Route path="/reel" element={<ReelPage />} />
                         <Route path="/login" element={<LoginPage />} />
+                        <Route path="/about" element={<AboutPage />} />
                     </Routes>
                 </main>
                 <FooterWrapper />
