@@ -12,7 +12,12 @@ import {
   Bookmark,
   Send,
   User,
-  Loader2
+  Loader2,
+  Pause,
+  Volume2,
+  VolumeX,
+  Maximize,
+  RotateCcw,
 } from 'lucide-react';
 
 // Firebase imports - uncomment and configure these
@@ -30,6 +35,7 @@ import {
   addDoc,
   serverTimestamp
 } from "firebase/firestore";
+import { Link, useNavigation } from 'react-router-dom';
 
 // Replace with your actual Cloudflare account hash
 const CLOUDFLARE_ACCOUNT_HASH = import.meta.env.VITE_ACCOUNT_HASH;;
@@ -95,6 +101,7 @@ const InstagramFeed = () => {
         setPosts(newPosts);
       }
 console.log(newPosts);
+
       // Set last document for pagination
       if (snapshot.docs.length > 0) {
         setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
@@ -149,10 +156,6 @@ console.log(newPosts);
 
   return (
     <div className="min-h-screen bg-black text-white">
-     
-
-    
-
       {/* Posts Feed */}
       <div className="max-w-lg mx-auto">
         {posts.map((post, index) => (
@@ -302,20 +305,15 @@ const PostCard = React.forwardRef(({ post }, ref) => {
       {/* Post Header */}
       <div className="px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-         
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-full">
-                            <Play className="w-8 h-8 text-white" />
-                        </div>
-            
-        
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-full">
+            <Play className="w-8 h-8 text-white" />
+          </div>
           <div>
             <div className="flex items-center space-x-2">
               <span className="font-semibold text-sm">
                 {post.title || 'ShunyeOTT Content'}
               </span>
-             
             </div>
-           
           </div>
         </div>
         <MoreHorizontal className="w-6 h-6 text-gray-400" />
@@ -326,7 +324,6 @@ const PostCard = React.forwardRef(({ post }, ref) => {
         <PostMedia post={post} />
       </div>
 
-     
       {/* CTA Button */}
       <div className="px-1 pb-4 mt-4">
         <PostActionButton post={post} />
@@ -334,6 +331,279 @@ const PostCard = React.forwardRef(({ post }, ref) => {
     </div>
   );
 });
+
+const VideoPlayer = ({ post }) => {
+  const videoRef = useRef(null);
+  const hlsRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [showControls, setShowControls] = useState(false);
+
+  const getVideoUrl = () => {
+    if (post.videoStreamId) {
+      return `https://customer-01eap4epl2x94qzd.cloudflarestream.com/${post.videoStreamId}/manifest/video.m3u8`;
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const video = videoRef.current;
+    const videoSrc = getVideoUrl();
+    
+    if (!video || !videoSrc) return;
+
+    // Check if HLS is supported natively
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = videoSrc;
+      setIsLoading(false);
+    } else {
+      // Use HLS.js for browsers that don't support HLS natively
+      const loadHlsScript = async () => {
+        try {
+          // Load HLS.js from CDN
+          if (!window.Hls) {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/hls.js@latest';
+            script.onload = () => initializeHls();
+            script.onerror = () => setError(true);
+            document.head.appendChild(script);
+          } else {
+            initializeHls();
+          }
+        } catch (err) {
+          console.error('Failed to load HLS.js:', err);
+          setError(true);
+        }
+      };
+
+      const initializeHls = () => {
+        if (window.Hls && window.Hls.isSupported()) {
+          const hls = new window.Hls({
+            debug: false,
+            enableWorker: true,
+            lowLatencyMode: true,
+          });
+          
+          hlsRef.current = hls;
+          hls.loadSource(videoSrc);
+          hls.attachMedia(video);
+          
+          hls.on(window.Hls.Events.MANIFEST_PARSED, () => {
+            setIsLoading(false);
+            console.log('HLS manifest loaded');
+          });
+          
+          hls.on(window.Hls.Events.ERROR, (event, data) => {
+            console.error('HLS error:', data);
+            if (data.fatal) {
+              setError(true);
+              setIsLoading(false);
+            }
+          });
+        } else {
+          console.error('HLS is not supported');
+          setError(true);
+          setIsLoading(false);
+        }
+      };
+
+      loadHlsScript();
+    }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [post.videoStreamId]);
+
+  const togglePlay = async () => {
+    if (videoRef.current) {
+      try {
+        if (isPlaying) {
+          videoRef.current.pause();
+        } else {
+          await videoRef.current.play();
+        }
+        setIsPlaying(!isPlaying);
+      } catch (err) {
+        console.error('Error toggling play:', err);
+      }
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      setDuration(videoRef.current.duration);
+      setIsLoading(false);
+    }
+  };
+
+  const handleSeek = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const newTime = (clickX / rect.width) * duration;
+    
+    if (videoRef.current) {
+      videoRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+    }
+  };
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const handleError = (e) => {
+    console.error('Video error:', e);
+    setError(true);
+    setIsLoading(false);
+  };
+
+  const handleCanPlay = () => {
+    setIsLoading(false);
+    setError(false);
+  };
+
+  const handleRestart = () => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      setCurrentTime(0);
+    }
+  };
+
+  const videoUrl = getVideoUrl();
+
+  if (!videoUrl || error) {
+    return (
+      <div className="aspect-square bg-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-2">📹</div>
+          <p className="text-gray-400">Video unavailable</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="relative aspect-square bg-black group"
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => setShowControls(false)}
+    >
+      <video
+        ref={videoRef}
+        className="w-full h-full object-cover"
+        muted={isMuted}
+        playsInline
+        preload="metadata"
+        controls={false}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onError={handleError}
+        onCanPlay={handleCanPlay}
+        onLoadStart={() => setIsLoading(true)}
+        onLoadedData={() => setIsLoading(false)}
+        onWaiting={() => setIsLoading(true)}
+        onCanPlayThrough={() => setIsLoading(false)}
+      />
+
+      {/* Loading overlay */}
+      {isLoading && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-white" />
+        </div>
+      )}
+
+      {/* Play/Pause overlay */}
+      <div 
+        className="absolute inset-0 flex items-center justify-center cursor-pointer"
+        onClick={togglePlay}
+      >
+        {!isPlaying && !isLoading && (
+          <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Play className="w-8 h-8 text-black ml-1" />
+          </div>
+        )}
+      </div>
+
+      {/* Controls overlay */}
+      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4 transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}>
+        {/* Progress bar */}
+        <div 
+          className="w-full h-1 bg-white/30 rounded-full mb-3 cursor-pointer"
+          onClick={handleSeek}
+        >
+          <div 
+            className="h-full bg-white rounded-full transition-all duration-150"
+            style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+          />
+        </div>
+
+        {/* Controls */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={togglePlay}
+              className="text-white hover:text-gray-300 transition-colors"
+            >
+              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+            </button>
+            
+            <button
+              onClick={toggleMute}
+              className="text-white hover:text-gray-300 transition-colors"
+            >
+              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            </button>
+
+            <button
+              onClick={handleRestart}
+              className="text-white hover:text-gray-300 transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex items-center space-x-2 text-white text-sm">
+            <span>{formatTime(currentTime)}</span>
+            <span>/</span>
+            <span>{formatTime(duration)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Duration badge */}
+      {post.duration && (
+        <div className="absolute top-2 right-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
+          {post.duration}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const PostMedia = ({ post }) => {
   const [imageError, setImageError] = useState(false);
@@ -350,7 +620,6 @@ const PostMedia = ({ post }) => {
     } else if (post.imgId) {
       console.log("image",post.imgId)
       return getImageUrl(post.imgId);
-      
     }
     return `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=800&fit=crop`;
   };
@@ -372,36 +641,13 @@ const PostMedia = ({ post }) => {
       return <MultiImageCarousel images={post.imageIds || []} />;
     
     case 'video':
-      return (
-        <div className="aspect-square bg-black flex items-center justify-center relative group cursor-pointer">
-          <img 
-            src={ ` https://customer-01eap4epl2x94qzd.cloudflarestream.com/${post.videoStreamId}/manifest/video.m3u8`|| `https://images.unsplash.com/photo-1555255707-c07966088b7b?w=800&h=800&fit=crop`}
-            alt="Video thumbnail"
-            className="w-full h-full object-cover"
-          />
-          {
-            console.log("video",`https://customer-01eap4epl2x94qzd.cloudflarestream.com/${post.videoStreamId}/manifest/video.m3u8`)
-          }
-          {
-            console.log(post)
-          }
-          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-            <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Play className="w-8 h-8 text-black ml-1" />
-            </div>
-          </div>
-          {post.duration && (
-            <div className="absolute bottom-2 right-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
-              {post.duration}
-            </div>
-          )}
-        </div>
-      );
+      return <VideoPlayer post={post} />;
     
     case 'reels_carousel':
       return (
         <div className="aspect-square bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center relative">
           <div className="text-center text-white">
+            {console.log(post,"reel")}
             <div className="grid grid-cols-3 gap-2 mb-4 mx-auto w-20">
               {[...Array(9)].map((_, i) => (
                 <div key={i} className="aspect-square bg-white/20 rounded-sm animate-pulse" style={{animationDelay: `${i * 0.1}s`}} />
@@ -516,6 +762,7 @@ const PostActionButton = ({ post }) => {
   };
 
   const businessInfo = getBusinessInfo(post);
+  console.log(businessInfo,"businessInfo")
   
   const buttonStyle = {
     backgroundColor: post.buttonBgColor || '#F57C00',
@@ -523,11 +770,7 @@ const PostActionButton = ({ post }) => {
   };
 
   const handleCTAClick = () => {
-    // Handle CTA button click - navigate to business page or external link
-    if (businessInfo?.creatorTopicId) {
-      console.log('Navigate to business:', businessInfo.creatorTopicId);
-      // Example: navigate(`/business/${businessInfo.creatorTopicId}`);
-    }
+    // navigate(`/business/levels/${businessInfo.creatorTopicId}`)
   };
 
   if (post.postType === 'reels_carousel') {
@@ -543,16 +786,18 @@ const PostActionButton = ({ post }) => {
   }
 
   return (
-    <button 
-      onClick={handleCTAClick}
-      className="w-full py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
-      style={buttonStyle}
-    >
-      {businessInfo 
-        ? `Learn ${businessInfo.creatorTopicName}` 
-        : post.ctaText || 'Learn More'
-      }
-    </button>
+    <Link to={`/business/levels/${businessInfo.creatorTopicId}`}>
+      <button 
+        onClick={handleCTAClick}
+        className="w-full py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
+        style={buttonStyle}
+      >
+        {businessInfo 
+          ? `Learn ${businessInfo.creatorTopicName}` 
+          : post.ctaText || 'Learn More'
+        }
+      </button>
+    </Link>
   );
 };
 
@@ -560,10 +805,6 @@ const LoadingSkeleton = () => {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-md mx-auto">
-        
-        
-       
-        
         {/* Posts Skeleton */}
         {[...Array(3)].map((_, i) => (
           <div key={i} className="mb-6">

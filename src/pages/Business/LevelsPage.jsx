@@ -29,6 +29,10 @@ export default function LevelsPage() {
     // Use ref to prevent infinite loops
     const isFetchingRef = useRef(false);
     const mountedRef = useRef(true);
+     const goBack = useCallback(() => {
+    window.history.back();
+  }, []);
+
 
     const accountHash = import.meta.env.VITE_ACCOUNT_HASH;
 
@@ -361,15 +365,16 @@ export default function LevelsPage() {
             <div className="bg-gray-900/50 border-b border-gray-800">
                 <div className="container mx-auto px-4 py-6">
                     <div className="flex items-center gap-4">
-                        <Link to="/business">
+                        {/* <Link to="/business"> */}
                             <Button
                                 variant="ghost"
                                 size="icon"
+                                onClick={goBack}
                                 className="text-white hover:text-orange-500"
                             >
                                 <ArrowLeft className="w-5 h-5" />
                             </Button>
-                        </Link>
+                        {/* </Link> */}
                         <div>
                             <h1 className="text-3xl font-bold">
                                 <span className="text-orange-500">Level</span>{" "}
