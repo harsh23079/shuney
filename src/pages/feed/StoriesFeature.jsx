@@ -23,6 +23,8 @@ const StoriesFeature = () => {
 
     const progressInterval = useRef(null);
     const fetchedRef = useRef(false);
+    const previousStoryRef = useRef(null);
+    const previousImageRef = useRef(null);
     const accountHash = import.meta.env.VITE_ACCOUNT_HASH;
 
     const fetchStories = async () => {
@@ -111,13 +113,20 @@ const StoriesFeature = () => {
         }
     };
 
-    // Progress interval effect - properly reset when story/image changes
+    // Progress interval effect - properly reset when story/image changes but preserve pause state
     useEffect(() => {
         // Clear any existing interval
         clearProgressInterval();
         
-        // Reset progress to 0 when story or image changes
-        setProgress(0);
+        // Only reset progress if story or image actually changed, not just pause state
+        const storyChanged = previousStoryRef.current !== selectedStory?.id;
+        const imageChanged = previousImageRef.current !== currentImageIndex;
+        
+        if (storyChanged || imageChanged) {
+            setProgress(0);
+            previousStoryRef.current = selectedStory?.id;
+            previousImageRef.current = currentImageIndex;
+        }
 
         if (!selectedStory || !isPlaying || !selectedStory.imageIds?.length) {
             return;
@@ -147,6 +156,10 @@ const StoriesFeature = () => {
             setCurrentImageIndex(0);
             setProgress(0);
             setIsPlaying(true);
+            
+            // Update refs for new story
+            previousStoryRef.current = story.id;
+            previousImageRef.current = 0;
         }
     };
 
@@ -156,6 +169,8 @@ const StoriesFeature = () => {
         setCurrentImageIndex(0);
         setProgress(0);
         setIsPlaying(true);
+        previousStoryRef.current = null;
+        previousImageRef.current = null;
     };
 
     const goToPrevious = () => {
@@ -263,7 +278,7 @@ const StoriesFeature = () => {
     }
 
     return (
-        <div className="w-full">
+        <div className="w-full fixed">
             <div className="bg-gray-900/30 py-4 px-4 ">
                 <div className=" max-w-90 justify-center flex  space-x-4 overflow-x-auto scrollbar-hide">
                     {stories.map((story) => (
