@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Button } from "../../components/ui/Button";
-import { Badge } from "../../components/ui/Badge";
+import { Button } from "./ui/Button";
+import { Badge } from "./ui/Badge";
 import {
     ArrowLeft,
     Play,
@@ -10,10 +10,10 @@ import {
     RefreshCw,
     Eye,
 } from "lucide-react";
-import { Card, CardContent } from "../../components/ui/Card";
+import { Card, CardContent } from "./ui/Card";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
-import { db } from "../../firebase/firebase-config";
+import { db } from "../firebase/firebase-config";
 
 export default function LevelsPage() {
     const { creatorTopicId } = useParams(); // Get creatorTopicId from URL params
@@ -29,10 +29,9 @@ export default function LevelsPage() {
     // Use ref to prevent infinite loops
     const isFetchingRef = useRef(false);
     const mountedRef = useRef(true);
-     const goBack = useCallback(() => {
-    window.history.back();
-  }, []);
-
+    const goBack = useCallback(() => {
+        window.history.back();
+    }, []);
 
     const accountHash = import.meta.env.VITE_ACCOUNT_HASH;
 
@@ -199,7 +198,9 @@ export default function LevelsPage() {
             });
             // Add your navigation logic here
             // For example: navigate(`/level/${level.levelId}`);
-            navigate(`/business/level-videos/${level.levelId}?page=1`);
+            navigate(
+                `/levels/${creatorTopicId}/videos/${level.levelId}?page=1`
+            );
         },
         [navigate]
     );
@@ -366,14 +367,14 @@ export default function LevelsPage() {
                 <div className="container mx-auto px-4 py-6">
                     <div className="flex items-center gap-4">
                         {/* <Link to="/business"> */}
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={goBack}
-                                className="text-white hover:text-orange-500"
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                            </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={goBack}
+                            className="text-white hover:text-orange-500"
+                        >
+                            <ArrowLeft className="w-5 h-5" />
+                        </Button>
                         {/* </Link> */}
                         <div>
                             <h1 className="text-3xl font-bold">

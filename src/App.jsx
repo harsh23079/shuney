@@ -15,9 +15,9 @@ import ServicesPage from "./pages/ServicesPage";
 import LoginPage from "./pages/LoginPage";
 import ReelPage from "./pages/ReelPage";
 import "./App.css";
-import LevelsPage from "./pages/Business/LevelsPage";
+import LevelsPage from "./components/LevelsPage";
+import LevelVideosPage from "./components/levelVideosPage";
 import SubcategoriesPage from "./pages/HomeLevels/SubCategoriesPage";
-import LevelVideosPage from "./pages/Business/levelVideosPage";
 import AllTopicsPage from "./pages/HomeLevels/AllTopics";
 import CreatorPlaylist from "./pages/Creators/CreatorPlaylist";
 import TopicGrid from "./pages/Creators/TopicGrid";
@@ -26,6 +26,7 @@ import VideoPlayer from "./pages/Creators/VideoPlayer";
 import FeedPage from "./pages/FeedPage";
 import AboutPage from "./pages/AboutPage";
 import { ScrollToTop } from "./components/ScrollToTop";
+import CreatorsPage from "./pages/HomeLevels/CreatorsPage";
 
 function LevelLayout() {
     return <Outlet />;
@@ -54,11 +55,8 @@ function App() {
                                 path="levels/:creatorTopicId"
                                 element={<LevelsPage />}
                             />
-                            <Route
-                                path="level-videos/:levelId?"
-                                element={<LevelVideosPage />}
-                            />
                         </Route>
+
                         <Route
                             path="/level/categories"
                             element={<LevelLayout />}
@@ -71,6 +69,14 @@ function App() {
                             <Route
                                 path=":categoryId/subcategories/:subCategoryId"
                                 element={<AllTopicsPage />}
+                            />
+                            <Route
+                                path=":categoryId/subcategories/:subCategoryId/creators/:creatorTopicId"
+                                element={<CreatorsPage />}
+                            />
+                            <Route
+                                path=":categoryId/subcategories/:subCategoryId/creators/:creatorTopicId/levels/:creatorTopicId"
+                                element={<LevelsPage />}
                             />
                         </Route>
                         <Route path="/creators" element={<LevelLayout />}>
@@ -88,6 +94,10 @@ function App() {
                                 element={<VideoPlayer />}
                             />
                         </Route>
+                        <Route
+                            path="levels/:creatorTopicId/videos/:levelId?"
+                            element={<LevelVideosPage />}
+                        />
                         <Route path="/services" element={<ServicesPage />} />
                         <Route path="/reel" element={<ReelPage />} />
                         <Route path="/login" element={<LoginPage />} />

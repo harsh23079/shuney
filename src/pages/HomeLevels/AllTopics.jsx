@@ -7,7 +7,7 @@ import { Button } from "../../components/ui/Button";
 import { Loader2, ArrowLeft, Play, RefreshCw } from "lucide-react";
 
 export default function AllTopicsPage() {
-    const { subCategoryId } = useParams();
+    const { subCategoryId, categoryId } = useParams();
     const navigate = useNavigate();
     const [topics, setTopics] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -60,7 +60,9 @@ export default function AllTopicsPage() {
     const handleCardClick = (topic) => {
         console.log("Topic clicked:", topic);
         // You can navigate to lesson page here
-        // navigate(`/lesson/${topic.creatorTopicId}`);
+        navigate(
+            `/level/categories/${categoryId}/subcategories/${subCategoryId}/creators/${topic.creatorTopicId}`
+        );
     };
 
     const BackButton = () => (

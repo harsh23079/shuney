@@ -4,8 +4,6 @@ import { Badge } from "../../components/ui/Badge";
 import {
     ArrowLeft,
     Play,
-    Star,
-    TrendingUp,
     Loader2,
     RefreshCw,
 } from "lucide-react";
@@ -34,7 +32,6 @@ export default function BusinessPage() {
 
     const accountHash = import.meta.env.VITE_ACCOUNT_HASH;
 
-    // ✅ Updated to fetch from creatortopics-new collection
     const fetchBusinessTopics = useCallback(async () => {
         // Prevent multiple simultaneous fetches
         if (isFetchingRef.current) {
@@ -98,9 +95,8 @@ export default function BusinessPage() {
             }
             isFetchingRef.current = false;
         }
-    }, []); // Empty dependency array is fine here since we don't depend on external values
+    }, []); 
 
-    // ✅ useEffect with cleanup
     useEffect(() => {
         mountedRef.current = true;
         fetchBusinessTopics();

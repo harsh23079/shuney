@@ -4,31 +4,27 @@ import {
     useParams,
     useSearchParams,
 } from "react-router-dom";
-import { Button } from "../../components/ui/Button";
-import { Badge } from "../../components/ui/Badge";
+import { Button } from "./ui/Button";
+import { Badge } from "./ui/Badge";
 import {
     ArrowLeft,
     Play,
     Pause,
-    SkipBack,
-    SkipForward,
     Volume2,
     VolumeX,
     Maximize,
     Minimize,
     Clock,
     List,
-    ChevronLeft,
-    ChevronRight,
     Loader2,
     RefreshCw,
     PlayCircle,
     AlertCircle,
 } from "lucide-react";
-import { Card, CardContent } from "../../components/ui/Card";
+import { Card, CardContent } from "./ui/Card";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
-import { db } from "../../firebase/firebase-config";
+import { db } from "../firebase/firebase-config";
 
 export default function LevelVideosPage() {
     const { levelId } = useParams();
