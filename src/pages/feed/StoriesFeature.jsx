@@ -252,7 +252,7 @@ const StoriesFeature = () => {
 
     if (loading) {
         return (
-            <div className="bg-gray-900/30 py-4 px-4 border-b border-gray-800">
+            <div className="bg-black py-4 px-4 border-b border-gray-800">
                 <div className="flex items-center justify-center space-x-2 py-8">
                     <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
                     <span className="text-gray-300">Loading stories...</span>
@@ -263,7 +263,7 @@ const StoriesFeature = () => {
 
     if (error) {
         return (
-            <div className="bg-gray-900/30 py-4 px-4 border-b border-gray-800">
+            <div className="bg-black py-4 px-4 border-b border-gray-800">
                 <div className="text-center py-8">
                     <p className="text-red-400 mb-2">{error}</p>
                     <button
@@ -278,9 +278,9 @@ const StoriesFeature = () => {
     }
 
     return (
-        <div className="w-full fixed">
-            <div className="bg-gray-900/30 py-4 px-4 ">
-                <div className=" max-w-90 justify-center flex  space-x-4 overflow-x-auto scrollbar-hide">
+        <div className="w-full sticky top-16 z-50 bg-black  ">
+            <div className=" py-4 px-4 ">
+                <div className="max-w-90 lg:justify-center justify-start flex space-x-4 overflow-x-auto scrollbar-hide">
                     {stories.map((story) => (
                         <div
                             key={story.id}
@@ -393,6 +393,7 @@ const StoriesFeature = () => {
                             className="w-full h-full object-cover"
                             onError={handleImageError}
                         />
+                        {/* Touch areas for mobile navigation */}
                         <div
                             className="absolute left-0 top-0 w-1/3 h-full cursor-pointer z-10"
                             onClick={goToPrevious}
@@ -406,32 +407,31 @@ const StoriesFeature = () => {
                             onClick={togglePlayPause}
                         />
 
-                        <div className="hidden md:block">
-                            {(stories.findIndex(
-                                (s) => s.id === selectedStory.id
-                            ) > 0 ||
-                                currentImageIndex > 0) && (
-                                <button
-                                    onClick={goToPrevious}
-                                    className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors z-20"
-                                >
-                                    <ChevronLeft className="w-6 h-6" />
-                                </button>
-                            )}
-                            {(stories.findIndex(
-                                (s) => s.id === selectedStory.id
-                            ) <
-                                stories.length - 1 ||
-                                currentImageIndex <
-                                    selectedStory.imageIds.length - 1) && (
-                                <button
-                                    onClick={goToNext}
-                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors z-20"
-                                >
-                                    <ChevronRight className="w-6 h-6" />
-                                </button>
-                            )}
-                        </div>
+                        {/* Navigation buttons - now visible on all screen sizes */}
+                        {(stories.findIndex(
+                            (s) => s.id === selectedStory.id
+                        ) > 0 ||
+                            currentImageIndex > 0) && (
+                            <button
+                                onClick={goToPrevious}
+                                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors z-20"
+                            >
+                                <ChevronLeft className="w-6 h-6" />
+                            </button>
+                        )}
+                        {(stories.findIndex(
+                            (s) => s.id === selectedStory.id
+                        ) <
+                            stories.length - 1 ||
+                            currentImageIndex <
+                                selectedStory.imageIds.length - 1) && (
+                            <button
+                                onClick={goToNext}
+                                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors z-20"
+                            >
+                                <ChevronRight className="w-6 h-6" />
+                            </button>
+                        )}
                     </div>
 
                     {selectedStory.title && (

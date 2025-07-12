@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Play, 
   Heart, 
@@ -10,194 +10,176 @@ import {
   Eye,
   Clock,
   Bookmark,
-  Send
+  Send,
+  User,
+  Loader2
 } from 'lucide-react';
 
-// You'll need to import your Firebase config
- import { db } from '../../firebase/firebase-config';
- import { getFirestore, collection, query, orderBy, getDocs } from "firebase/firestore";
+// Firebase imports - uncomment and configure these
+import { db } from '../../firebase/firebase-config';
+import { 
+  collection, 
+  query, 
+  orderBy, 
+  limit, 
+  getDocs, 
+  startAfter,
+  doc,
+  updateDoc,
+  increment,
+  addDoc,
+  serverTimestamp
+} from "firebase/firestore";
 
 // Replace with your actual Cloudflare account hash
-const CLOUDFLARE_ACCOUNT_HASH = import.meta.env.VITE_ACCOUNT_HASH;
+const CLOUDFLARE_ACCOUNT_HASH = import.meta.env.VITE_ACCOUNT_HASH;;
+const POSTS_PER_PAGE = 5;
 
 const InstagramFeed = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [lastDoc, setLastDoc] = useState(null);
+  const observer = useRef();
 
-  // Fetch posts from Firestore
+  // Fetch initial posts
   useEffect(() => {
     fetchPosts();
   }, []);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (isLoadMore = false) => {
     try {
-      setLoading(true);
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
 
-      // Uncomment when you have Firebase setup
-    
-      const q = query(
-        collection(db, "feed-posts"),
-        orderBy("_createdBy.timestamp", "desc")
-      );
+      // Build Firebase query
+      let q;
+      if (lastDoc && isLoadMore) {
+        q = query(
+          collection(db, "feed-posts"),
+          orderBy("_createdBy.timestamp", "desc"),
+          startAfter(lastDoc),
+          limit(POSTS_PER_PAGE)
+        );
+      } else {
+        q = query(
+          collection(db, "feed-posts"),
+          orderBy("_createdBy.timestamp", "desc"),
+          limit(POSTS_PER_PAGE)
+        );
+      }
 
       const snapshot = await getDocs(q);
-      const postsData = [];
+      const newPosts = [];
       
       snapshot.forEach((doc) => {
         const data = doc.data();
         // Filter visible posts
         if (data.isVisible === true) {
-          postsData.push({
+          newPosts.push({
             id: doc.id,
             ...data
           });
         }
       });
 
-      setPosts(postsData);
-    
-
-      // Temporary mock data structure matching your Firestore schema
-      // const mockPosts = [
-      //   {
-      //     id: "post1",
-      //     postType: "image",
-      //     title: "Digital Marketing Masterclass",
-      //     description: "Learn the fundamentals of digital marketing and grow your business online with proven strategies",
-      //     iconId: "icon123",
-      //     imgId: "img456",
-      //     buttonBgColor: "#F57C00",
-      //     buttonTextColor: "#FFFFFF",
-      //     ctaText: "Learn More",
-      //     businessInfo: [{
-      //       creatorTopicId: "topic1",
-      //       creatorTopicName: "Digital Marketing"
-      //     }],
-      //     isVisible: true,
-      //     likesCount: 234,
-      //     commentsCount: 45,
-      //     viewsCount: 1200,
-      //     _createdBy: {
-      //       displayName: "Sarah Johnson",
-      //       email: "sarah@example.com",
-      //       photoUrl: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
-      //       timestamp: { toDate: () => new Date(Date.now() - 2 * 60 * 60 * 1000) }
-      //     }
-      //   },
-      //   {
-      //     id: "post2",
-      //     postType: "multi_image",
-      //     title: "Web Development Bootcamp",
-      //     description: "From HTML to React - Complete web development journey with hands-on projects",
-      //     iconId: "icon789",
-      //     imageIds: ["img1", "img2", "img3"],
-      //     buttonBgColor: "#4F46E5",
-      //     buttonTextColor: "#FFFFFF",
-      //     ctaText: "Start Learning",
-      //     businessInfo: [{
-      //       creatorTopicId: "topic2",
-      //       creatorTopicName: "Web Development"
-      //     }],
-      //     isVisible: true,
-      //     likesCount: 567,
-      //     commentsCount: 89,
-      //     viewsCount: 2400,
-      //     _createdBy: {
-      //       displayName: "Mike Chen",
-      //       email: "mike@example.com",
-      //       photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
-      //       timestamp: { toDate: () => new Date(Date.now() - 5 * 60 * 60 * 1000) }
-      //     }
-      //   },
-      //   {
-      //     id: "post3",
-      //     postType: "video",
-      //     title: "AI & Machine Learning Basics",
-      //     description: "Understand the fundamentals of AI and how it's transforming industries worldwide",
-      //     iconId: "icon101",
-      //     videoStreamId: "stream123",
-      //     thumbnailUrl: "https://images.unsplash.com/photo-1555255707-c07966088b7b?w=800&h=600&fit=crop",
-      //     duration: "15:30",
-      //     buttonBgColor: "#10B981",
-      //     buttonTextColor: "#FFFFFF",
-      //     ctaText: "Watch Course",
-      //     businessInfo: [{
-      //       creatorTopicId: "topic3",
-      //       creatorTopicName: "Artificial Intelligence"
-      //     }],
-      //     isVisible: true,
-      //     likesCount: 892,
-      //     commentsCount: 156,
-      //     viewsCount: 4500,
-      //     _createdBy: {
-      //       displayName: "Dr. Emily Rodriguez",
-      //       email: "emily@example.com",
-      //       photoUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-      //       timestamp: { toDate: () => new Date(Date.now() - 8 * 60 * 60 * 1000) }
-      //     }
-      //   },
-      //   {
-      //     id: "post4",
-      //     postType: "reels_carousel",
-      //     title: "Quick Business Tips",
-      //     description: "Swipe through our latest business tips and strategies for success",
-      //     reelsCount: 8,
-      //     reelIds: ["reel1", "reel2", "reel3"],
-      //     isVisible: true,
-      //     likesCount: 445,
-      //     commentsCount: 78,
-      //     viewsCount: 3200,
-      //     _createdBy: {
-      //       displayName: "Business Pro",
-      //       email: "business@example.com",
-      //       photoUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-      //       timestamp: { toDate: () => new Date(Date.now() - 12 * 60 * 60 * 1000) }
-      //     }
-      //   }
-      // ];
-
-      // setPosts(mockPosts);
+      if (isLoadMore) {
+        setPosts(prev => [...prev, ...newPosts]);
+      } else {
+        setPosts(newPosts);
+      }
+console.log(newPosts);
+      // Set last document for pagination
+      if (snapshot.docs.length > 0) {
+        setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      }
+      
+      // Check if there are more posts
+      setHasMore(snapshot.docs.length === POSTS_PER_PAGE);
       
     } catch (err) {
       console.error("Error fetching posts:", err);
       setError("Failed to load posts. Please try again.");
     } finally {
       setLoading(false);
-      setRefreshing(false);
+      setLoadingMore(false);
     }
   };
 
+  const loadMore = useCallback(() => {
+    if (hasMore && !loadingMore) {
+      fetchPosts(true);
+    }
+  }, [hasMore, loadingMore]);
+
+  // Infinite scroll observer
+  const lastPostElementRef = useCallback(node => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore && !loadingMore) {
+        loadMore();
+      }
+    }, {
+      threshold: 0.1
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore, loadingMore, loadMore]);
+
   const handleRefresh = () => {
-    setRefreshing(true);
+    setPosts([]);
+    setLastDoc(null);
+    setHasMore(true);
     fetchPosts();
   };
 
-  if (loading) {
+  if (loading && posts.length === 0) {
     return <LoadingSkeleton />;
   }
 
-  if (error) {
+  if (error && posts.length === 0) {
     return <ErrorState error={error} onRetry={handleRefresh} />;
   }
 
   return (
     <div className="min-h-screen bg-black text-white">
-  
+     
 
-      
+    
 
       {/* Posts Feed */}
-      <div className="max-w-md mx-auto">
-        {posts.map((post) => (
-          <PostCard key={post.id} post={post} />
+      <div className="max-w-lg mx-auto">
+        {posts.map((post, index) => (
+          <PostCard 
+            key={post.id} 
+            post={post} 
+            ref={index === posts.length - 1 ? lastPostElementRef : null}
+          />
         ))}
       </div>
 
+      {/* Loading More */}
+      {loadingMore && (
+        <div className="max-w-md mx-auto py-8 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+        </div>
+      )}
+
+      {/* No More Posts */}
+      {!hasMore && posts.length > 0 && (
+        <div className="max-w-md mx-auto text-center py-8">
+          <p className="text-gray-400">You're all caught up!</p>
+        </div>
+      )}
+
       {/* Empty State */}
-      {posts.length === 0 && (
+      {posts.length === 0 && !loading && (
         <div className="max-w-md mx-auto text-center py-20">
           <div className="text-6xl mb-4">📱</div>
           <h3 className="text-xl font-semibold mb-2">No posts yet</h3>
@@ -214,17 +196,31 @@ const InstagramFeed = () => {
   );
 };
 
-const PostCard = ({ post }) => {
+const PostCard = React.forwardRef(({ post }, ref) => {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [likes, setLikes] = useState(post.likesCount || 0);
   const [views, setViews] = useState(post.viewsCount || 0);
   const [comments] = useState(post.commentsCount || 0);
+  const [comment, setComment] = useState('');
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLikes(prev => liked ? prev - 1 : prev + 1);
+  const handleLike = async () => {
+    try {
+      setLiked(!liked);
+      setLikes(prev => liked ? prev - 1 : prev + 1);
+      
+      // Update likes in Firebase
+      const postRef = doc(db, "feed-posts", post.id);
+      await updateDoc(postRef, {
+        likesCount: increment(liked ? -1 : 1)
+      });
+    } catch (error) {
+      console.error("Error updating likes:", error);
+      // Revert UI changes on error
+      setLiked(liked);
+      setLikes(prev => liked ? prev + 1 : prev - 1);
+    }
   };
 
   const handleSave = () => {
@@ -245,6 +241,31 @@ const PostCard = ({ post }) => {
     } else {
       navigator.clipboard.writeText(window.location.href);
       alert('Link copied to clipboard!');
+    }
+  };
+
+  const handleComment = async () => {
+    if (comment.trim()) {
+      try {
+        // Add comment to Firebase
+        await addDoc(collection(db, "comments"), {
+          postId: post.id,
+          comment: comment.trim(),
+          createdAt: serverTimestamp(),
+          userId: "current-user-id", // Replace with actual user ID
+          userName: "Current User" // Replace with actual user name
+        });
+        
+        // Update comment count
+        const postRef = doc(db, "feed-posts", post.id);
+        await updateDoc(postRef, {
+          commentsCount: increment(1)
+        });
+        
+        setComment('');
+      } catch (error) {
+        console.error("Error adding comment:", error);
+      }
     }
   };
 
@@ -277,41 +298,59 @@ const PostCard = ({ post }) => {
   };
 
   return (
-    <div className="mb-6 bg-black">
-      
+    <div ref={ref} className="mb-6 bg-black">
+      {/* Post Header */}
+      <div className="px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+         
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-full">
+                            <Play className="w-8 h-8 text-white" />
+                        </div>
+            
+        
+          <div>
+            <div className="flex items-center space-x-2">
+              <span className="font-semibold text-sm">
+                {post.title || 'ShunyeOTT Content'}
+              </span>
+             
+            </div>
+           
+          </div>
+        </div>
+        <MoreHorizontal className="w-6 h-6 text-gray-400" />
+      </div>
+
       {/* Post Media */}
       <div className="relative">
         <PostMedia post={post} />
       </div>
 
-    
-
      
-     
-
-     
-
       {/* CTA Button */}
-      <div className="px-4 pb-4">
+      <div className="px-1 pb-4 mt-4">
         <PostActionButton post={post} />
       </div>
     </div>
   );
-};
+});
 
 const PostMedia = ({ post }) => {
   const [imageError, setImageError] = useState(false);
   
   const getImageUrl = (imageId) => {
     if (!imageId) return `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=800&fit=crop`;
-    return `https://imagedelivery.net/${CLOUDFLARE_ACCOUNT_HASH}/${imageId}`;
+    console.log('image2',`https://imagedelivery.net/${CLOUDFLARE_ACCOUNT_HASH}/${imageId}/public`)
+    return `https://imagedelivery.net/${CLOUDFLARE_ACCOUNT_HASH}/${imageId}/public`;
   };
 
   const getFirstImageUrl = () => {
     if (post.imageIds && post.imageIds.length > 0) {
       return getImageUrl(post.imageIds[0]);
     } else if (post.imgId) {
+      console.log("image",post.imgId)
       return getImageUrl(post.imgId);
+      
     }
     return `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=800&fit=crop`;
   };
@@ -323,7 +362,7 @@ const PostMedia = ({ post }) => {
           <img
             src={imageError ? `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=800&fit=crop` : getFirstImageUrl()}
             alt={post.title || 'Post image'}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-fill"
             onError={() => setImageError(true)}
           />
         </div>
@@ -336,10 +375,16 @@ const PostMedia = ({ post }) => {
       return (
         <div className="aspect-square bg-black flex items-center justify-center relative group cursor-pointer">
           <img 
-            src={post.thumbnailUrl || `https://images.unsplash.com/photo-1555255707-c07966088b7b?w=800&h=800&fit=crop`}
+            src={ ` https://customer-01eap4epl2x94qzd.cloudflarestream.com/${post.videoStreamId}/manifest/video.m3u8`|| `https://images.unsplash.com/photo-1555255707-c07966088b7b?w=800&h=800&fit=crop`}
             alt="Video thumbnail"
             className="w-full h-full object-cover"
           />
+          {
+            console.log("video",`https://customer-01eap4epl2x94qzd.cloudflarestream.com/${post.videoStreamId}/manifest/video.m3u8`)
+          }
+          {
+            console.log(post)
+          }
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
             <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
               <Play className="w-8 h-8 text-black ml-1" />
@@ -391,7 +436,7 @@ const MultiImageCarousel = ({ images }) => {
   
   const getImageUrl = (imageId) => {
     if (!imageId) return `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=800&fit=crop`;
-    return `https://imagedelivery.net/${CLOUDFLARE_ACCOUNT_HASH}/${imageId}`;
+    return `https://imagedelivery.net/${CLOUDFLARE_ACCOUNT_HASH}/${imageId}/public`;
   };
 
   if (validImages.length === 0) {
@@ -464,6 +509,12 @@ const MultiImageCarousel = ({ images }) => {
 };
 
 const PostActionButton = ({ post }) => {
+  const getBusinessInfo = (post) => {
+    return post.businessInfo && post.businessInfo.length > 0 
+      ? post.businessInfo[0] 
+      : null;
+  };
+
   const businessInfo = getBusinessInfo(post);
   
   const buttonStyle = {
@@ -471,15 +522,18 @@ const PostActionButton = ({ post }) => {
     color: post.buttonTextColor || '#FFFFFF',
   };
 
-  function getBusinessInfo(post) {
-    return post.businessInfo && post.businessInfo.length > 0 
-      ? post.businessInfo[0] 
-      : null;
-  }
+  const handleCTAClick = () => {
+    // Handle CTA button click - navigate to business page or external link
+    if (businessInfo?.creatorTopicId) {
+      console.log('Navigate to business:', businessInfo.creatorTopicId);
+      // Example: navigate(`/business/${businessInfo.creatorTopicId}`);
+    }
+  };
 
   if (post.postType === 'reels_carousel') {
     return (
       <button 
+        onClick={handleCTAClick}
         className="w-full py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white"
       >
         <Play className="w-4 h-4 inline mr-2" />
@@ -490,6 +544,7 @@ const PostActionButton = ({ post }) => {
 
   return (
     <button 
+      onClick={handleCTAClick}
       className="w-full py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
       style={buttonStyle}
     >
@@ -505,20 +560,9 @@ const LoadingSkeleton = () => {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-md mx-auto">
-        {/* Header Skeleton */}
-        <div className="p-4 border-b border-gray-800">
-          <div className="h-8 bg-gray-800 rounded w-32 animate-pulse"></div>
-        </div>
         
-        {/* Stories Skeleton */}
-        <div className="p-4 flex space-x-4 overflow-x-auto">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="flex-shrink-0 text-center">
-              <div className="w-16 h-16 bg-gray-800 rounded-full animate-pulse"></div>
-              <div className="h-3 bg-gray-800 rounded w-12 mt-2 animate-pulse"></div>
-            </div>
-          ))}
-        </div>
+        
+       
         
         {/* Posts Skeleton */}
         {[...Array(3)].map((_, i) => (
