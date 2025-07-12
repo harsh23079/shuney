@@ -727,7 +727,7 @@ export default function ReelPage() {
                                         className="relative bg-gray-900 rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
                                         style={{
                                             width: "350px",
-                                            height: "700px",
+                                            height: "550px",
                                         }}
                                         onClick={(e) =>
                                             handleVideoClick(index, e)
