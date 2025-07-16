@@ -8,29 +8,7 @@ import {
     startAfter,
 } from "firebase/firestore";
 import { db } from "../firebase/firebase-config";
-
-// HLS.js dynamic loader with caching
-const loadHlsScript = (() => {
-    let hlsPromise = null;
-
-    return () => {
-        if (hlsPromise) return hlsPromise;
-
-        if (window.Hls) {
-            return Promise.resolve(window.Hls);
-        }
-
-        hlsPromise = new Promise((resolve, reject) => {
-            const script = document.createElement("script");
-            script.src = "https://cdn.jsdelivr.net/npm/hls.js@latest";
-            script.onload = () => resolve(window.Hls);
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-
-        return hlsPromise;
-    };
-})();
+import VideoPlayer from "../components/VideoPlayer"; // Adjust import path as needed
 
 export default function ReelPage() {
     // State management
@@ -41,20 +19,16 @@ export default function ReelPage() {
     const [hasMore, setHasMore] = useState(true);
     const [userInteracted, setUserInteracted] = useState(false);
     const [globalMuted, setGlobalMuted] = useState(true);
-    const [volume, setVolume] = useState(50);
-    const [pausedVideos, setPausedVideos] = useState({});
+    const [playingStates, setPlayingStates] = useState({});
     const [showCreatorInfo, setShowCreatorInfo] = useState({});
-    const [hlsLoaded, setHlsLoaded] = useState(false);
-    const [videoStates, setVideoStates] = useState({});
+    const [initialFetchDone, setInitialFetchDone] = useState(false);
 
     // Refs
-    const videoRefs = useRef([]);
-    const hlsInstances = useRef(new Map());
     const observer = useRef(null);
     const containerRef = useRef(null);
+    const reelRefs = useRef([]);
 
     const REELS_LIMIT = 10;
-    const PRELOAD_DISTANCE = 2;
 
     // Memoized video URLs with validation
     const reelsWithUrls = useMemo(() => {
@@ -66,196 +40,76 @@ export default function ReelPage() {
 
             return {
                 ...reel,
-                videoUrl: hasValidStreamId
-                    ? `https://customer-01eap4epl2x94qzd.cloudflarestream.com/${reel.videoStreamId.trim()}/manifest/video.m3u8`
-                    : null,
+                hasValidVideo: hasValidStreamId,
             };
         });
     }, [reels]);
 
-    // Load HLS.js with error handling
-    useEffect(() => {
-        let isMounted = true;
+    // Optimized fetch function - removed from useCallback to break dependency cycle
+    const fetchReels = useCallback(
+        async (forceRefresh = false) => {
+            if (isLoading || (!hasMore && !forceRefresh)) return;
 
-        loadHlsScript()
-            .then(() => {
-                if (isMounted) {
-                    setHlsLoaded(true);
-                    console.log("HLS.js loaded successfully");
-                }
-            })
-            .catch((error) => {
-                if (isMounted) {
-                    console.error("Failed to load HLS.js:", error);
-                    // Fallback: try to use native HLS support
-                    setHlsLoaded(true);
-                }
-            });
+            setIsLoading(true);
 
-        return () => {
-            isMounted = false;
-        };
-    }, []);
-
-    // Enhanced HLS setup with better error handling
-    const setupHls = useCallback((video, url, index) => {
-        if (!video || !url) return;
-
-        const instanceKey = `${index}`;
-
-        // Clean up existing instance
-        if (hlsInstances.current.has(instanceKey)) {
-            const existingHls = hlsInstances.current.get(instanceKey);
-            existingHls.destroy();
-            hlsInstances.current.delete(instanceKey);
-        }
-
-        // Check for HLS support
-        if (window.Hls?.isSupported()) {
-            const hls = new window.Hls({
-                enableWorker: true,
-                lowLatencyMode: true,
-                backBufferLength: 90,
-                maxBufferLength: 30,
-                maxMaxBufferLength: 600,
-                startLevel: -1, // Auto quality selection
-                debug: false,
-            });
-
-            hls.loadSource(url);
-            hls.attachMedia(video);
-
-            // Event handlers
-            hls.on(window.Hls.Events.MANIFEST_PARSED, () => {
-                setVideoStates((prev) => ({
-                    ...prev,
-                    [index]: { ...prev[index], loaded: true },
-                }));
-            });
-
-            hls.on(window.Hls.Events.ERROR, (event, data) => {
-                console.error("HLS error for video", index, ":", data);
-
-                if (data.fatal) {
-                    switch (data.type) {
-                        case window.Hls.ErrorTypes.NETWORK_ERROR:
-                            console.log("Recovering from network error...");
-                            hls.startLoad();
-                            break;
-                        case window.Hls.ErrorTypes.MEDIA_ERROR:
-                            console.log("Recovering from media error...");
-                            hls.recoverMediaError();
-                            break;
-                        default:
-                            console.log("Fatal error, destroying HLS instance");
-                            hls.destroy();
-                            hlsInstances.current.delete(instanceKey);
-                            setVideoStates((prev) => ({
-                                ...prev,
-                                [index]: { ...prev[index], error: true },
-                            }));
-                            break;
-                    }
-                }
-            });
-
-            hlsInstances.current.set(instanceKey, hls);
-        } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-            // Safari native HLS support
-            video.src = url;
-            setVideoStates((prev) => ({
-                ...prev,
-                [index]: { ...prev[index], loaded: true },
-            }));
-        } else {
-            console.error("HLS not supported in this browser");
-            setVideoStates((prev) => ({
-                ...prev,
-                [index]: { ...prev[index], error: true },
-            }));
-        }
-    }, []);
-
-    // Optimized fetch function
-    const fetchReels = useCallback(async () => {
-        if (isLoading || !hasMore) return;
-
-        setIsLoading(true);
-
-        try {
-            let q = query(
-                collection(db, "reel-shorts"),
-                orderBy("_createdBy.timestamp", "desc"),
-                limit(REELS_LIMIT)
-            );
-
-            if (lastVisible) {
-                q = query(
+            try {
+                let q = query(
                     collection(db, "reel-shorts"),
                     orderBy("_createdBy.timestamp", "desc"),
-                    startAfter(lastVisible),
                     limit(REELS_LIMIT)
                 );
-            }
 
-            const snapshot = await getDocs(q);
-            const fetchedReels = snapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
+                if (lastVisible && !forceRefresh) {
+                    q = query(
+                        collection(db, "reel-shorts"),
+                        orderBy("_createdBy.timestamp", "desc"),
+                        startAfter(lastVisible),
+                        limit(REELS_LIMIT)
+                    );
+                }
 
-            if (fetchedReels.length < REELS_LIMIT) {
-                setHasMore(false);
-            }
+                const snapshot = await getDocs(q);
+                const fetchedReels = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
 
-            setReels((prevReels) => {
-                const existingIds = new Set(prevReels.map((reel) => reel.id));
-                const newReels = fetchedReels.filter(
-                    (reel) => !existingIds.has(reel.id)
-                );
-                return [...prevReels, ...newReels];
-            });
+                if (fetchedReels.length < REELS_LIMIT) {
+                    setHasMore(false);
+                }
 
-            if (snapshot.docs.length > 0) {
-                setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
-            }
-        } catch (error) {
-            console.error("Error fetching reels:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [isLoading, hasMore, lastVisible]);
+                if (forceRefresh) {
+                    setReels(fetchedReels);
+                    setLastVisible(
+                        snapshot.docs.length > 0
+                            ? snapshot.docs[snapshot.docs.length - 1]
+                            : null
+                    );
+                } else {
+                    setReels((prevReels) => {
+                        const existingIds = new Set(
+                            prevReels.map((reel) => reel.id)
+                        );
+                        const newReels = fetchedReels.filter(
+                            (reel) => !existingIds.has(reel.id)
+                        );
+                        return [...prevReels, ...newReels];
+                    });
 
-    // Smart video preloading
-    const shouldPreloadVideo = useCallback(
-        (index) => {
-            return Math.abs(index - currentIndex) <= PRELOAD_DISTANCE;
-        },
-        [currentIndex]
-    );
-
-    // Setup videos with preloading logic
-    useEffect(() => {
-        if (!hlsLoaded || reelsWithUrls.length === 0) return;
-
-        const setupVideosWithDelay = setTimeout(() => {
-            reelsWithUrls.forEach((reel, index) => {
-                const video = videoRefs.current[index];
-
-                if (video && reel.videoUrl && shouldPreloadVideo(index)) {
-                    const instanceKey = `${index}`;
-
-                    if (!hlsInstances.current.has(instanceKey)) {
-                        setupHls(video, reel.videoUrl, index);
+                    if (snapshot.docs.length > 0) {
+                        setLastVisible(snapshot.docs[snapshot.docs.length - 1]);
                     }
                 }
-            });
-        }, 100);
 
-        return () => {
-            clearTimeout(setupVideosWithDelay);
-        };
-    }, [hlsLoaded, reelsWithUrls, setupHls, shouldPreloadVideo]);
+                setInitialFetchDone(true);
+            } catch (error) {
+                console.error("Error fetching reels:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        [isLoading, hasMore, lastVisible]
+    ); // Keep dependencies minimal
 
     // Enhanced scroll handler with throttling
     const handleScroll = useCallback(() => {
@@ -299,42 +153,8 @@ export default function ReelPage() {
     // Enhanced global mute/unmute
     const toggleGlobalMute = useCallback(() => {
         setUserInteracted(true);
-
-        setGlobalMuted((prevMuted) => {
-            const newMutedState = !prevMuted;
-
-            // Apply to all loaded videos
-            videoRefs.current.forEach((video, index) => {
-                if (video && videoStates[index]?.loaded) {
-                    video.muted = newMutedState;
-                    if (!newMutedState) {
-                        video.volume = volume / 100;
-                    }
-                }
-            });
-
-            return newMutedState;
-        });
-    }, [volume, videoStates]);
-
-    // Enhanced volume control
-    const handleVolumeChange = useCallback(
-        (newVolume) => {
-            setVolume(newVolume);
-            setUserInteracted(true);
-
-            const isMuted = newVolume === 0;
-            setGlobalMuted(isMuted);
-
-            videoRefs.current.forEach((video, index) => {
-                if (video && videoStates[index]?.loaded) {
-                    video.volume = newVolume / 100;
-                    video.muted = isMuted;
-                }
-            });
-        },
-        [videoStates]
-    );
+        setGlobalMuted((prev) => !prev);
+    }, []);
 
     // Toggle creator info
     const toggleCreatorInfo = useCallback((index) => {
@@ -344,65 +164,44 @@ export default function ReelPage() {
         }));
     }, []);
 
-    // Enhanced video click handler with improved pause/play logic
-    const handleVideoClick = useCallback(
-        (index, event) => {
-            // Prevent propagation to avoid conflicts with other click handlers
-            event.stopPropagation();
+    // Handle video play/pause for a specific reel
+    const handleVideoPlayPause = useCallback((index) => {
+        setUserInteracted(true);
 
-            const video = videoRefs.current[index];
-            if (!video || !videoStates[index]?.loaded) return;
+        return (newPlayingState) => {
+            setPlayingStates((prev) => {
+                const newStates = { ...prev };
 
-            setUserInteracted(true);
+                if (typeof newPlayingState === "function") {
+                    newStates[index] = newPlayingState(prev[index] || false);
+                } else {
+                    newStates[index] = newPlayingState;
+                }
 
-            // Check current video state
-            const isCurrentlyPaused = video.paused || pausedVideos[index];
-
-            if (isCurrentlyPaused) {
-                // Resume/Play video
-                setPausedVideos((prev) => ({
-                    ...prev,
-                    [index]: false,
-                }));
-
-                // Set volume and mute state
-                video.muted = globalMuted;
-                video.volume = globalMuted ? 0 : volume / 100;
-
-                // Play video with error handling
-                video.play().catch((error) => {
-                    console.error("Error playing video:", error);
-                    // Fallback: try muted playback
-                    video.muted = true;
-                    video.play().catch((fallbackError) => {
-                        console.error(
-                            "Fallback play also failed:",
-                            fallbackError
-                        );
+                // If this video is starting to play, pause all others
+                if (newStates[index]) {
+                    Object.keys(newStates).forEach((key) => {
+                        if (parseInt(key) !== index) {
+                            newStates[key] = false;
+                        }
                     });
-                });
-            } else {
-                // Pause video
-                video.pause();
-                setPausedVideos((prev) => ({
-                    ...prev,
-                    [index]: true,
-                }));
-            }
-        },
-        [globalMuted, volume, videoStates, pausedVideos]
-    );
+                }
+
+                return newStates;
+            });
+        };
+    }, []);
 
     // Function to pause all videos except the current one
     const pauseAllVideosExcept = useCallback((exceptIndex) => {
-        videoRefs.current.forEach((video, index) => {
-            if (video && index !== exceptIndex && !video.paused) {
-                video.pause();
-                setPausedVideos((prev) => ({
-                    ...prev,
-                    [index]: true,
-                }));
-            }
+        setPlayingStates((prev) => {
+            const newStates = { ...prev };
+            Object.keys(newStates).forEach((key) => {
+                if (parseInt(key) !== exceptIndex) {
+                    newStates[key] = false;
+                }
+            });
+            return newStates;
         });
     }, []);
 
@@ -411,79 +210,36 @@ export default function ReelPage() {
         window.history.back();
     }, []);
 
-    // Video event handlers
-    const handleVideoCanPlay = useCallback((index) => {
-        setVideoStates((prev) => ({
-            ...prev,
-            [index]: { ...prev[index], canPlay: true },
-        }));
-    }, []);
-
-    const handleVideoLoadStart = useCallback((index) => {
-        setVideoStates((prev) => ({
-            ...prev,
-            [index]: { ...prev[index], loading: true },
-        }));
-    }, []);
-
-    const handleVideoError = useCallback((index, error) => {
-        console.error("Video error for index:", index, error);
-        setVideoStates((prev) => ({
-            ...prev,
-            [index]: { ...prev[index], error: true, loading: false },
-        }));
-    }, []);
-
-    // Track video play/pause events
-    const handleVideoPlay = useCallback(
-        (index) => {
-            setPausedVideos((prev) => ({
-                ...prev,
-                [index]: false,
-            }));
-            // Pause all other videos when one starts playing
-            pauseAllVideosExcept(index);
-        },
-        [pauseAllVideosExcept]
-    );
-
-    const handleVideoPause = useCallback((index) => {
-        setPausedVideos((prev) => ({
-            ...prev,
-            [index]: true,
-        }));
-    }, []);
-
-    // Track user interaction for autoplay
+    // Track user interaction for autoplay - FIXED: Added proper dependency array
     useEffect(() => {
+        if (userInteracted) return;
+
         const handleUserInteraction = () => {
             setUserInteracted(true);
         };
 
-        if (!userInteracted) {
-            const events = ["click", "touchstart", "keydown"];
-            events.forEach((event) => {
-                document.addEventListener(event, handleUserInteraction, {
-                    once: true,
-                });
+        const events = ["click", "touchstart", "keydown"];
+        events.forEach((event) => {
+            document.addEventListener(event, handleUserInteraction, {
+                once: true,
             });
+        });
 
-            return () => {
-                events.forEach((event) => {
-                    document.removeEventListener(event, handleUserInteraction);
-                });
-            };
-        }
-    }, [userInteracted]);
+        return () => {
+            events.forEach((event) => {
+                document.removeEventListener(event, handleUserInteraction);
+            });
+        };
+    }, [userInteracted]); // Added dependency array
 
-    // Initial fetch
+    // Initial fetch - FIXED: Prevent infinite loop
     useEffect(() => {
-        if (reels.length === 0) {
-            fetchReels();
+        if (!initialFetchDone && !isLoading) {
+            fetchReels(true);
         }
-    }, []);
+    }, [initialFetchDone, isLoading, fetchReels]);
 
-    // Scroll event listener
+    // Scroll event listener - FIXED: Removed fetchReels from dependency
     useEffect(() => {
         let timeoutId;
 
@@ -505,72 +261,58 @@ export default function ReelPage() {
         };
     }, [handleScroll]);
 
-    // Enhanced intersection observer
+    // Enhanced intersection observer - FIXED: Better dependency management
     useEffect(() => {
         if (observer.current) {
             observer.current.disconnect();
         }
 
+        if (reelsWithUrls.length === 0) return;
+
         const setupObserver = setTimeout(() => {
             observer.current = new IntersectionObserver(
                 (entries) => {
                     entries.forEach((entry) => {
-                        const video = entry.target;
-                        const index = videoRefs.current.findIndex(
-                            (ref) => ref === video
-                        );
+                        const reelElement = entry.target;
+                        const index = parseInt(reelElement.dataset.reelIndex);
 
-                        if (index === -1) return;
+                        if (isNaN(index)) return;
 
                         if (entry.isIntersecting) {
                             setCurrentIndex(index);
 
-                            // Auto-play logic - only if not manually paused
+                            // Auto-play logic - only if user has interacted
                             if (
-                                !pausedVideos[index] &&
                                 userInteracted &&
-                                videoStates[index]?.loaded
+                                reelsWithUrls[index]?.hasValidVideo
                             ) {
-                                const playVideo = async () => {
-                                    try {
-                                        video.muted = globalMuted;
-                                        video.volume = globalMuted
-                                            ? 0
-                                            : volume / 100;
-                                        await video.play();
-                                    } catch (error) {
-                                        // Fallback to muted playback
-                                        video.muted = true;
-                                        try {
-                                            await video.play();
-                                        } catch (secondError) {
-                                            console.log(
-                                                "Video playback failed:",
-                                                secondError.message
-                                            );
-                                        }
-                                    }
-                                };
-                                playVideo();
+                                setPlayingStates((prev) => {
+                                    const newStates = { ...prev };
+                                    // Pause all other videos
+                                    Object.keys(newStates).forEach((key) => {
+                                        newStates[key] = false;
+                                    });
+                                    // Start playing current video
+                                    newStates[index] = true;
+                                    return newStates;
+                                });
                             }
                         } else {
                             // Pause video when not visible
-                            if (!video.paused) {
-                                video.pause();
-                            }
-                            // Reset video when it goes out of view
-                            video.currentTime = 0;
-                            // Don't automatically reset pause state - let user control it
+                            setPlayingStates((prev) => ({
+                                ...prev,
+                                [index]: false,
+                            }));
                         }
                     });
                 },
                 { threshold: 0.8, rootMargin: "0px 0px -10% 0px" }
             );
 
-            // Observe all videos
-            videoRefs.current.forEach((video) => {
-                if (video && observer.current) {
-                    observer.current.observe(video);
+            // Observe all reel elements
+            reelRefs.current.forEach((reelElement) => {
+                if (reelElement && observer.current) {
+                    observer.current.observe(reelElement);
                 }
             });
         }, 100);
@@ -581,27 +323,7 @@ export default function ReelPage() {
                 observer.current.disconnect();
             }
         };
-    }, [
-        reelsWithUrls.length,
-        globalMuted,
-        volume,
-        userInteracted,
-        videoStates,
-        pausedVideos,
-    ]);
-
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            // Destroy all HLS instances
-            hlsInstances.current.forEach((hls) => {
-                if (hls) {
-                    hls.destroy();
-                }
-            });
-            hlsInstances.current.clear();
-        };
-    }, []);
+    }, [reelsWithUrls.length, userInteracted]);
 
     return (
         <div
@@ -696,244 +418,168 @@ export default function ReelPage() {
             {/* Main Content */}
             <div className="flex justify-center items-start min-h-screen bg-black pt-20">
                 <div className="relative flex flex-col items-center w-full max-w-md">
-                    {/* Loading HLS indicator */}
-                    {!hlsLoaded && (
-                        <div className="flex items-center justify-center p-8 text-gray-400">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mr-3"></div>
-                            Loading video player...
-                        </div>
-                    )}
-
                     {/* Reels */}
-                    {hlsLoaded &&
-                        reelsWithUrls.map((reel, index) => {
-                            if (!reel.videoUrl) {
-                                console.warn(
-                                    `No valid video URL for reel ${reel.id}`
-                                );
-                                return null;
-                            }
+                    {reelsWithUrls.map((reel, index) => {
+                        if (!reel.hasValidVideo) {
+                            console.warn(
+                                `No valid video stream ID for reel ${reel.id}`
+                            );
+                            return null;
+                        }
 
-                            const videoState = videoStates[index] || {};
-                            const isVideoPaused = pausedVideos[index] || false;
+                        const isPlaying = playingStates[index] || false;
 
-                            return (
+                        return (
+                            <div
+                                key={`${reel.id}-${index}`}
+                                className="mb-8"
+                                data-reel-index={index}
+                                ref={(el) => {
+                                    if (el) {
+                                        reelRefs.current[index] = el;
+                                    }
+                                }}
+                            >
                                 <div
-                                    key={`${reel.id}-${index}`}
-                                    className="mb-8"
-                                    data-reel-index={index}
+                                    className="relative bg-gray-900 rounded-2xl overflow-hidden shadow-2xl"
+                                    style={{
+                                        width: "350px",
+                                        height: "550px",
+                                    }}
                                 >
-                                    <div
-                                        className="relative bg-gray-900 rounded-2xl overflow-hidden cursor-pointer shadow-2xl"
-                                        style={{
-                                            width: "350px",
-                                            height: "550px",
-                                        }}
-                                        onClick={(e) =>
-                                            handleVideoClick(index, e)
-                                        }
-                                    >
-                                        <video
-                                            ref={(el) => {
-                                                if (el) {
-                                                    videoRefs.current[index] =
-                                                        el;
-                                                }
-                                            }}
-                                            loop
-                                            playsInline
-                                            muted={globalMuted}
-                                            preload="metadata"
-                                            className="w-full h-full object-cover"
-                                            onError={(e) =>
-                                                handleVideoError(index, e)
-                                            }
-                                            onLoadStart={() =>
-                                                handleVideoLoadStart(index)
-                                            }
-                                            onCanPlay={() =>
-                                                handleVideoCanPlay(index)
-                                            }
-                                            onPlay={() =>
-                                                handleVideoPlay(index)
-                                            }
-                                            onPause={() =>
-                                                handleVideoPause(index)
-                                            }
-                                        />
+                                    <VideoPlayer
+                                        videoStreamId={reel.videoStreamId.trim()}
+                                        playing={playingStates[index] || false}
+                                        onPlayPause={(newVal) =>
+                                            handleVideoPlayPause(index)(newVal)
+                                        } // ✅ Fixed callback
+                                    />
 
-                                        {/* Loading overlay */}
-                                        {videoState.loading &&
-                                            !videoState.canPlay && (
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-                                                </div>
-                                            )}
-
-                                        {/* Error overlay */}
-                                        {videoState.error && (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/70">
-                                                <div className="text-center">
-                                                    <div className="text-4xl mb-2">
-                                                        ⚠️
-                                                    </div>
-                                                    <p className="text-white">
-                                                        Failed to load video
-                                                    </p>
-                                                </div>
-                                            </div>
+                                    {/* Content overlay */}
+                                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                                        {/* Title */}
+                                        {reel.title && (
+                                            <h2 className="text-white text-lg font-bold mb-3 line-clamp-2">
+                                                {reel.title}
+                                            </h2>
                                         )}
 
-                                        {/* Pause overlay - Enhanced */}
-                                        {isVideoPaused &&
-                                            currentIndex === index && (
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-                                                    <div className="bg-black/70 text-white p-6 rounded-full shadow-lg">
-                                                        <svg
-                                                            width="48"
-                                                            height="48"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                        >
-                                                            <path
-                                                                d="M8 5V19L19 12L8 5Z"
-                                                                fill="currentColor"
+                                        {/* Creator Info */}
+                                        {reel.creatorName && (
+                                            <div className="mb-3">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleCreatorInfo(
+                                                            index
+                                                        );
+                                                    }}
+                                                    className="flex items-center gap-2 text-white hover:text-orange-500 transition-colors"
+                                                >
+                                                    <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                                        {reel._createdBy
+                                                            ?.photoURL ? (
+                                                            <img
+                                                                src={
+                                                                    reel
+                                                                        ._createdBy
+                                                                        .photoURL
+                                                                }
+                                                                className="w-8 h-8 rounded-full object-cover"
+                                                                alt="Creator Avatar"
                                                             />
-                                                        </svg>
+                                                        ) : (
+                                                            reel.creatorName
+                                                                .charAt(0)
+                                                                .toUpperCase()
+                                                        )}
                                                     </div>
-                                                    <div className="absolute bottom-20 text-white text-sm opacity-75">
-                                                        Tap to play
-                                                    </div>
-                                                </div>
-                                            )}
 
-                                        {/* Content overlay */}
-                                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                                            {/* Title */}
-                                            {reel.title && (
-                                                <h2 className="text-white text-lg font-bold mb-3 line-clamp-2">
-                                                    {reel.title}
-                                                </h2>
-                                            )}
-                                            {/* Creator Info */}
-
-                                            {reel.creatorName && (
-                                                <div className="mb-3">
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleCreatorInfo(
-                                                                index
-                                                            );
-                                                        }}
-                                                        className="flex items-center gap-2 text-white hover:text-orange-500 transition-colors"
-                                                    >
-                                                        <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                                                            {reel._createdBy
-                                                                .photoURL ? (
-                                                                <img
-                                                                    src={
-                                                                        reel
-                                                                            ._createdBy
-                                                                            .photoURL
-                                                                    }
-                                                                    className="w-8 h-8 rounded-full object-cover"
-                                                                    alt="Creator Avatar"
-                                                                />
-                                                            ) : (
-                                                                reel.creatorName
-                                                                    .charAt(0)
-                                                                    .toUpperCase()
-                                                            )}
-                                                        </div>
-
-                                                        <span className="font-semibold text-sm">
-                                                            @
-                                                            {reel.creatorName
-                                                                .replace(
-                                                                    /\s+/g,
-                                                                    ""
-                                                                )
-                                                                .toLowerCase()}
-                                                        </span>
-                                                        <svg
-                                                            width="12"
-                                                            height="12"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            className={`transform transition-transform ${
-                                                                showCreatorInfo[
-                                                                    index
-                                                                ]
-                                                                    ? "rotate-180"
-                                                                    : ""
-                                                            }`}
-                                                        >
-                                                            <path
-                                                                d="M6 9L12 15L18 9"
-                                                                stroke="currentColor"
-                                                                strokeWidth="2"
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                            />
-                                                        </svg>
-                                                    </button>
-
-                                                    {showCreatorInfo[index] && (
-                                                        <div className="mt-2 p-3 bg-black/70 rounded-lg backdrop-blur-sm">
-                                                            <div className="flex items-center">
-                                                                <div>
-                                                                    <p className="text-white font-medium">
-                                                                        {
-                                                                            reel.creatorName
-                                                                        }
-                                                                    </p>
-                                                                    <p className="text-gray-300 text-xs">
-                                                                        Content
-                                                                        Creator
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                            {/* Description */}
-                                            {reel.description && (
-                                                <p className="text-white text-sm mb-2 line-clamp-3">
-                                                    {reel.description}
-                                                </p>
-                                            )}
-                                            {/* Music Info */}
-                                            {reel.music && (
-                                                <div className="text-xs text-white opacity-80 flex items-center gap-1">
+                                                    <span className="font-semibold text-sm">
+                                                        @
+                                                        {reel.creatorName
+                                                            .replace(/\s+/g, "")
+                                                            .toLowerCase()}
+                                                    </span>
                                                     <svg
                                                         width="12"
                                                         height="12"
                                                         viewBox="0 0 24 24"
                                                         fill="none"
                                                         xmlns="http://www.w3.org/2000/svg"
+                                                        className={`transform transition-transform ${
+                                                            showCreatorInfo[
+                                                                index
+                                                            ]
+                                                                ? "rotate-180"
+                                                                : ""
+                                                        }`}
                                                     >
                                                         <path
-                                                            d="M9 18V5L21 3V16M9 13L21 11M9 18C9 19.1046 8.10457 20 7 20C5.89543 20 5 19.1046 5 18C5 16.8954 5.89543 16 7 16C8.10457 16 9 16.8954 9 18ZM21 16C21 17.1046 20.1046 18 19 18C17.8954 18 17 17.1046 17 16C17 14.8954 17.8954 14 19 14C20.1046 14 21 14.8954 21 16Z"
+                                                            d="M6 9L12 15L18 9"
                                                             stroke="currentColor"
                                                             strokeWidth="2"
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
                                                         />
                                                     </svg>
-                                                    <span className="animate-pulse">
-                                                        ♪ {reel.music}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
+                                                </button>
+
+                                                {showCreatorInfo[index] && (
+                                                    <div className="mt-2 p-3 bg-black/70 rounded-lg backdrop-blur-sm">
+                                                        <div className="flex items-center">
+                                                            <div>
+                                                                <p className="text-white font-medium">
+                                                                    {
+                                                                        reel.creatorName
+                                                                    }
+                                                                </p>
+                                                                <p className="text-gray-300 text-xs">
+                                                                    Content
+                                                                    Creator
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Description */}
+                                        {reel.description && (
+                                            <p className="text-white text-sm mb-2 line-clamp-3">
+                                                {reel.description}
+                                            </p>
+                                        )}
+
+                                        {/* Music Info */}
+                                        {reel.music && (
+                                            <div className="text-xs text-white opacity-80 flex items-center gap-1">
+                                                <svg
+                                                    width="12"
+                                                    height="12"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                >
+                                                    <path
+                                                        d="M9 18V5L21 3V16M9 13L21 11M9 18C9 19.1046 8.10457 20 7 20C5.89543 20 5 19.1046 5 18C5 16.8954 5.89543 16 7 16C8.10457 16 9 16.8954 9 18ZM21 16C21 17.1046 20.1046 18 19 18C17.8954 18 17 17.1046 17 16C17 14.8954 17.8954 14 19 14C20.1046 14 21 14.8954 21 16Z"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                    />
+                                                </svg>
+                                                <span className="animate-pulse">
+                                                    ♪ {reel.music}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            );
-                        })}
+                            </div>
+                        );
+                    })}
 
                     {/* Loading indicator */}
                     {isLoading && (
@@ -950,7 +596,7 @@ export default function ReelPage() {
                     )}
 
                     {/* Empty state */}
-                    {!isLoading && reels.length === 0 && hlsLoaded && (
+                    {!isLoading && reels.length === 0 && initialFetchDone && (
                         <div className="text-center p-8 text-gray-400">
                             <div className="text-4xl mb-4">📹</div>
                             <p>No reels available</p>
