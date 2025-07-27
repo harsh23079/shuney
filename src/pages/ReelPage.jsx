@@ -18,7 +18,6 @@ export default function ReelPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [userInteracted, setUserInteracted] = useState(false);
-    const [globalMuted, setGlobalMuted] = useState(true);
     const [playingStates, setPlayingStates] = useState({});
     const [showCreatorInfo, setShowCreatorInfo] = useState({});
     const [initialFetchDone, setInitialFetchDone] = useState(false);
@@ -149,12 +148,6 @@ export default function ReelPage() {
         },
         [currentIndex, reels.length]
     );
-
-    // Enhanced global mute/unmute
-    const toggleGlobalMute = useCallback(() => {
-        setUserInteracted(true);
-        setGlobalMuted((prev) => !prev);
-    }, []);
 
     // Toggle creator info
     const toggleCreatorInfo = useCallback((index) => {
@@ -404,17 +397,6 @@ export default function ReelPage() {
                 </button>
             </div>
 
-            {/* Global Volume Control */}
-            <div className="fixed left-4 top-1/2 transform -translate-y-1/2 z-20 flex flex-col gap-2">
-                <button
-                    onClick={toggleGlobalMute}
-                    className="bg-black/70 text-white p-3 rounded-full hover:bg-orange-500 transition-colors"
-                    aria-label={globalMuted ? "Unmute" : "Mute"}
-                >
-                    {globalMuted ? "🔇" : "🔊"}
-                </button>
-            </div>
-
             {/* Main Content */}
             <div className="flex justify-center items-start min-h-screen bg-black pt-20">
                 <div className="relative flex flex-col items-center w-full max-w-md">
@@ -452,7 +434,8 @@ export default function ReelPage() {
                                         playing={playingStates[index] || false}
                                         onPlayPause={(newVal) =>
                                             handleVideoPlayPause(index)(newVal)
-                                        } // ✅ Fixed callback
+                                        }
+                                        controls={true}
                                     />
 
                                     {/* Content overlay */}
