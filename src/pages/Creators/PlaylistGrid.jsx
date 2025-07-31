@@ -114,6 +114,8 @@ const PlaylistGrid = () => {
                         ) : (
                             <>
                                 <RefreshCw className="w-4 h-4 mr-2" /> Try Again
+
+                                
                             </>
                         )}
                     </Button>
@@ -218,7 +220,7 @@ const PlaylistGrid = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                         {playlists.map((playlist, index) => (
                             <Card
                                 key={playlist.playlistId || index}
@@ -240,7 +242,7 @@ const PlaylistGrid = () => {
                                             className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity"
                                             loading="lazy"
                                         />
-                                        <div className="absolute inset-0 bg-black/40" />
+                                        <div className="absolute inset-0 bg-black/0 hover:bg-black/40" />
                                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                             <Button
                                                 size="lg"

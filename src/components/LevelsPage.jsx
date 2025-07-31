@@ -221,7 +221,7 @@ export default function LevelsPage() {
                             {sectionLevels.length} levels
                         </Badge>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                         {sectionLevels.map((level, index) => (
                             <Card
                                 key={level.id}
@@ -242,7 +242,7 @@ export default function LevelsPage() {
                                             }
                                             loading="lazy"
                                         />
-                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
 
                                         {/* Level number badge */}
                                         <div className="absolute top-4 left-4">

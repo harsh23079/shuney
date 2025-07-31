@@ -298,11 +298,11 @@ export default function BusinessPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                         {businesses.map((business, index) => (
                             <Card
                                 key={business.id}
-                                className="group bg-gray-900/50 border-gray-700 hover:border-orange-500 transition-all duration-300 overflow-hidden hover:scale-105 cursor-pointer"
+                                className="group bg-gray-900/50 border-gray-700 hover:border-orange-500 transition-all duration-300 overflow-hidden hover:scale-105 cursor-pointer "
                                 onClick={() => handleCardClick(business)}
                             >
                                 <CardContent className="p-0">
@@ -324,7 +324,7 @@ export default function BusinessPage() {
                                             }
                                             loading="lazy"
                                         />
-                                        <div className="absolute inset-0 bg-black/40" />
+                                        <div className="absolute inset-0  bg-black/0 hover:bg-black/40" />
                                         <div className="absolute top-4 left-4">
                                             {/* <Badge className="bg-orange-500 text-white font-bold text-lg px-3 py-1">
                         {index + 1}

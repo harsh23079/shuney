@@ -156,7 +156,7 @@ export default function AllTopicsPage() {
 
             {/* Grid */}
             <div className="container mx-auto px-4 py-10">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                     {topics.map((topic, index) => (
                         <Card
                             key={topic.id}
@@ -179,7 +179,7 @@ export default function AllTopicsPage() {
                                             )
                                         }
                                     />
-                                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition" />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition" />
                                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Button
                                             size="lg"

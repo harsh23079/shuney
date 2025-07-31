@@ -301,12 +301,12 @@ const PostCard = React.forwardRef(({ post }, ref) => {
   };
 
   return (
-    <div ref={ref} className="mb-6 bg-black">
+    <div ref={ref} className="mb-6 bg-black flex flex-col items-center justify-center">
       {/* Post Header */}
-      <div className="px-4 py-3 flex items-center justify-between">
+      <div className="px-4 py-3 flex items-center w-96 justify-between">
         <div className="flex items-center space-x-3">
           <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-full">
-            <Play className="w-8 h-8 text-white" />
+            <Play className="w-4 h-4 text-white" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
@@ -496,7 +496,7 @@ const VideoPlayer = ({ post }) => {
 
   if (!videoUrl || error) {
     return (
-      <div className="aspect-square bg-gray-800 flex items-center justify-center">
+      <div className="w-96 h-96 bg-gray-800 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-2">📹</div>
           <p className="text-gray-400">Video unavailable</p>
@@ -507,7 +507,7 @@ const VideoPlayer = ({ post }) => {
 
   return (
     <div 
-      className="relative aspect-square bg-black group"
+      className="relative w-96 h-96 bg-black group"
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
     >
@@ -627,7 +627,7 @@ const PostMedia = ({ post }) => {
   switch (post.postType) {
     case 'image':
       return (
-        <div className="aspect-square bg-gray-900">
+        <div className="w-96 h-96 bg-gray-900">
           <img
             src={imageError ? `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=800&fit=crop` : getFirstImageUrl()}
             alt={post.title || 'Post image'}
@@ -645,7 +645,7 @@ const PostMedia = ({ post }) => {
     
     case 'reels_carousel':
       return (
-        <div className="aspect-square bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center relative">
+        <div className="w-96 h-96 bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center relative">
           <div className="text-center text-white">
             {console.log(post,"reel")}
             <div className="grid grid-cols-3 gap-2 mb-4 mx-auto w-20">
@@ -709,7 +709,7 @@ const MultiImageCarousel = ({ images }) => {
   };
 
   return (
-    <div className="relative aspect-square bg-black">
+    <div className="relative w-96 h-96 bg-black">
       <img
         src={imageErrors[currentIndex] ? `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=800&fit=crop` : getImageUrl(validImages[currentIndex])}
         alt={`Image ${currentIndex + 1} of ${validImages.length}`}
@@ -777,7 +777,7 @@ const PostActionButton = ({ post }) => {
     return (
       <button 
         onClick={handleCTAClick}
-        className="w-full py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white"
+        className="w-96 py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white"
       >
         <Play className="w-4 h-4 inline mr-2" />
         Watch Reels
@@ -789,7 +789,7 @@ const PostActionButton = ({ post }) => {
     <Link to={`/business/levels/${businessInfo.creatorTopicId}`}>
       <button 
         onClick={handleCTAClick}
-        className="w-full py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
+        className="w-96 py-3 rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg"
         style={buttonStyle}
       >
         {businessInfo 
