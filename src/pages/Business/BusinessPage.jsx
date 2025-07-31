@@ -315,7 +315,7 @@ export default function BusinessPage() {
                                                 business.creatorTopicName ||
                                                 `Business ${index + 1}`
                                             }
-                                            className="w-fit h-fit object-fit opacity-90 group-hover:opacity-90 transition-opacity"
+                                            className="w-fit h-fit object-fit"
                                             onError={(e) =>
                                                 handleImageError(
                                                     business.thumbnailId,

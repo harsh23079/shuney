@@ -1,13 +1,20 @@
-// components/Navigation.jsx
 import { Link, useLocation } from "react-router-dom";
-import { Home, Briefcase, Play, BarChart3, Users } from "lucide-react";
+import {
+    Home,
+    Briefcase,
+    Play,
+    BarChart3,
+    Users,
+    BadgeIcon,
+} from "lucide-react";
 import { cn } from "../lib/utils";
 
 export function Navigation() {
     const location = useLocation();
 
     const navItems = [
-        { href: "/feed", label: "Feed", icon: Home },
+        { href: "/home", label: "Home", icon: Home },
+        { href: "/feed", label: "Feed", icon: BadgeIcon },
         { href: "/business", label: "Business", icon: Briefcase },
         { href: "/reel", label: "Reels", icon: Play },
         { href: "/level/categories", label: "Levels", icon: BarChart3 },

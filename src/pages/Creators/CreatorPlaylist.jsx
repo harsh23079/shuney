@@ -218,7 +218,7 @@ const CreatorPlaylist = () => {
                                                 creator.playlistCreatorName ||
                                                 `Creator ${index + 1}`
                                             }
-                                            className="w-full h-full opacity-90 group-hover:opacity-100 transition-opacity"
+                                            className="w-full h-full"
                                             loading="lazy"
                                         />
                                         <div className="absolute inset-0 bg-black/40" />

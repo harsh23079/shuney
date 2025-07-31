@@ -4,6 +4,7 @@ import {
     Route,
     Outlet,
     useLocation,
+    Navigate,
 } from "react-router-dom";
 import { Header } from "./components/Header";
 import { Navigation } from "./components/Navigation";
@@ -34,7 +35,7 @@ function LevelLayout() {
 
 function FooterWrapper() {
     const location = useLocation();
-    const showFooterOn = ["/", "/services", "/login"];
+    const showFooterOn = ["/home", "/services", "/login"];
     const showFooter = showFooterOn.includes(location.pathname);
     return showFooter ? <Footer /> : null;
 }
@@ -47,7 +48,11 @@ function App() {
                 <Header />
                 <main className="flex-1 pb-20">
                     <Routes>
-                        <Route path="/" element={<HomePage />} />
+                        <Route
+                            path="/"
+                            element={<Navigate to="/home" replace />}
+                        />
+                        <Route path="/home" element={<HomePage />} />
                         <Route path="/feed" element={<FeedPage />} />
                         <Route path="/business" element={<LevelLayout />}>
                             <Route index element={<BusinessPage />} />

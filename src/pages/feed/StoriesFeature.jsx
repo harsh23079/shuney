@@ -117,11 +117,11 @@ const StoriesFeature = () => {
     useEffect(() => {
         // Clear any existing interval
         clearProgressInterval();
-        
+
         // Only reset progress if story or image actually changed, not just pause state
         const storyChanged = previousStoryRef.current !== selectedStory?.id;
         const imageChanged = previousImageRef.current !== currentImageIndex;
-        
+
         if (storyChanged || imageChanged) {
             setProgress(0);
             previousStoryRef.current = selectedStory?.id;
@@ -150,13 +150,13 @@ const StoriesFeature = () => {
         if (story?.imageIds?.length) {
             // Clear any existing interval first
             clearProgressInterval();
-            
+
             // Set new story and reset all states
             setSelectedStory(story);
             setCurrentImageIndex(0);
             setProgress(0);
             setIsPlaying(true);
-            
+
             // Update refs for new story
             previousStoryRef.current = story.id;
             previousImageRef.current = 0;
@@ -175,7 +175,7 @@ const StoriesFeature = () => {
 
     const goToPrevious = () => {
         clearProgressInterval();
-        
+
         if (currentImageIndex > 0) {
             setCurrentImageIndex(currentImageIndex - 1);
         } else {
@@ -192,7 +192,7 @@ const StoriesFeature = () => {
 
     const goToNext = () => {
         clearProgressInterval();
-        
+
         if (
             selectedStory &&
             currentImageIndex < selectedStory.imageIds.length - 1
@@ -278,7 +278,7 @@ const StoriesFeature = () => {
     }
 
     return (
-        <div className="w-full sticky top-16 z-50 bg-black  ">
+        <div className="w-full  bg-black  ">
             <div className=" py-4 px-4 ">
                 <div className="max-w-90 lg:justify-center justify-start flex space-x-4 overflow-x-auto scrollbar-hide">
                     {stories.map((story) => (
@@ -288,7 +288,7 @@ const StoriesFeature = () => {
                             onClick={() => openStory(story)}
                         >
                             <div className="relative">
-                                <div className="w-28 h-28 bg-gradient-to-br from-orange-500 to-red-500 rounded-full p-0.5">
+                                <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-red-500 rounded-full p-0.5">
                                     <img
                                         src={
                                             getCloudflareImageUrl(
@@ -408,9 +408,8 @@ const StoriesFeature = () => {
                         />
 
                         {/* Navigation buttons - now visible on all screen sizes */}
-                        {(stories.findIndex(
-                            (s) => s.id === selectedStory.id
-                        ) > 0 ||
+                        {(stories.findIndex((s) => s.id === selectedStory.id) >
+                            0 ||
                             currentImageIndex > 0) && (
                             <button
                                 onClick={goToPrevious}
@@ -419,9 +418,7 @@ const StoriesFeature = () => {
                                 <ChevronLeft className="w-6 h-6" />
                             </button>
                         )}
-                        {(stories.findIndex(
-                            (s) => s.id === selectedStory.id
-                        ) <
+                        {(stories.findIndex((s) => s.id === selectedStory.id) <
                             stories.length - 1 ||
                             currentImageIndex <
                                 selectedStory.imageIds.length - 1) && (

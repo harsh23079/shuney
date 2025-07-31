@@ -228,7 +228,7 @@ export default function CategoriesPage() {
                                             category.categoryName ||
                                             `Category ${index + 1}`
                                         }
-                                        className="w-full h-48 object-cover opacity-90 group-hover:opacity-90 transition-opacity"
+                                        className="w-full h-48 object-cover"
                                         onError={(e) =>
                                             handleImageError(
                                                 category.thumbnailId,

@@ -108,8 +108,8 @@ export function Footer() {
                             <div className="flex items-start space-x-3">
                                 <MapPin className="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" />
                                 <div className="text-gray-400 text-sm text-left">
-                                    <p>D 197, Laxmi Nagar</p>
-                                    <p>Delhi, East - 110092</p>
+                                    <p>k-8 South Ex Part 2</p>
+                                    <p>Delhi - 110049</p>
                                 </div>
                             </div>
                             <div className="flex items-center space-x-3">
@@ -127,7 +127,7 @@ export function Footer() {
                                     href="mailto:levelslearning123@gmail.com"
                                     className="text-gray-400 hover:text-orange-500 transition-colors duration-200 text-sm break-all"
                                 >
-                                    levelslearning123@gmail.com
+                                    business@shunyeott.com
                                 </a>
                             </div>
                         </div>
