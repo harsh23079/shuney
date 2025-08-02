@@ -158,6 +158,10 @@ export default function CategoriesPage() {
                             </>
                         )}
                     </Button>
+                    <Button variant="outline" className="w-full" onClick={ ()=> navigate(-1)}  >
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back
+                    </Button>
                 </div>
             </div>
         );

@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { Button } from "./ui/Button";
 import { Badge } from "./ui/Badge";
 import {
@@ -17,6 +17,8 @@ import { db } from "../firebase/firebase-config";
 
 export default function LevelsPage() {
     const { creatorTopicId } = useParams(); // Get creatorTopicId from URL params
+    const location = useLocation ();
+    const buzName = location?.state?.buzName || "Level's";
     const [levels, setLevels] = useState([]);
     const [whatLevels, setWhatLevels] = useState([]);
     const [howLevels, setHowLevels] = useState([]);
@@ -348,12 +350,10 @@ export default function LevelsPage() {
                                 </>
                             )}
                         </Button>
-                        <Link to="/business">
-                            <Button variant="outline" className="w-full">
+                        <Button variant="outline" className="w-full" onClick={ ()=> navigate(-1)}  >
                                 <ArrowLeft className="w-4 h-4 mr-2" />
-                                Back to Business Topics
-                            </Button>
-                        </Link>
+                                Back
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -378,12 +378,11 @@ export default function LevelsPage() {
                         {/* </Link> */}
                         <div>
                             <h1 className="text-3xl font-bold">
-                                <span className="text-orange-500">Level</span>{" "}
-                                's
+                                <span className="text-orange-500">{buzName}</span>{" "}
                             </h1>
                             {/* <h1 className="text-3xl font-bold">
                                 <span className="text-orange-500">{topicName}</span>{" "} 
-                                Levels
+                                {buzName}
                             </h1> */}
                             <p className="text-gray-400 mt-1">
                                 Choose your learning path

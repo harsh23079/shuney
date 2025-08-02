@@ -124,7 +124,7 @@ export function Footer() {
                             <div className="flex items-center space-x-3">
                                 <Mail className="w-5 h-5 text-orange-500 flex-shrink-0" />
                                 <a
-                                    href="mailto:levelslearning123@gmail.com"
+                                    href="mailto:business@shunyeott.com"
                                     className="text-gray-400 hover:text-orange-500 transition-colors duration-200 text-sm break-all"
                                 >
                                     business@shunyeott.com
@@ -139,7 +139,7 @@ export function Footer() {
                     <div className="text-gray-500 text-sm">
                         © 2024 Copyright:
                         <span className="text-orange-500 ml-1">
-                            levelslearning123@gmail.com
+                            business@shunyeott.com
                         </span>
                     </div>
                 </div>

@@ -166,7 +166,7 @@ export default function BusinessPage() {
                 categoryId: business.categoryId,
                 subCategoryId: business.subCategoryId,
             });
-            navigate(`/business/levels/${business.creatorTopicId}`);
+            navigate(`/business/levels/${business.creatorTopicId}`, { state: { buzName: business.creatorTopicName } });
         },
         [navigate]
     );
