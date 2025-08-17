@@ -58,8 +58,16 @@ export default function LevelVideosPage() {
     const isFetchingRef = useRef(false);
     const mountedRef = useRef(true);
     const hlsRef = useRef(null);
+    const initialHistoryLengthRef = useRef(null);
 
     const accountHash = import.meta.env.VITE_ACCOUNT_HASH;
+
+    // Store initial history length to handle back button properly
+    useEffect(() => {
+        if (initialHistoryLengthRef.current === null) {
+            initialHistoryLengthRef.current = window.history.length;
+        }
+    }, []);
 
     // Initialize HLS support
     const initializeHLS = useCallback((videoElement, videoUrl) => {
@@ -181,10 +189,11 @@ export default function LevelVideosPage() {
             }
         } else if (videos.length > 0 && !currentVideo) {
             setCurrentVideo(videos[0]);
+            // Use replace instead of set to avoid adding to history
             setSearchParams((prev) => {
                 prev.set("video", videos[0].levelVideoId);
                 return prev;
-            });
+            }, { replace: true });
         }
     }, [videos, searchParams, setSearchParams, currentVideo]);
 
@@ -405,7 +414,7 @@ export default function LevelVideosPage() {
         }
     }, []);
 
-    // Handle video selection
+    // Handle video selection - use replace to avoid adding to history
     const handleVideoSelect = useCallback(
         (video) => {
             // Pause current video if playing
@@ -414,10 +423,11 @@ export default function LevelVideosPage() {
             }
 
             setCurrentVideo(video);
+            // Use replace: true to avoid adding to browser history
             setSearchParams((prev) => {
                 prev.set("video", video.levelVideoId);
                 return prev;
-            });
+            }, { replace: true });
             setCurrentTime(0);
             setVideoError(null);
             setIsPlaying(false); // Reset play state
@@ -425,21 +435,43 @@ export default function LevelVideosPage() {
         [setSearchParams, isPlaying]
     );
 
-    // Handle page change
+    // Handle page change - use replace to avoid adding to history
     const handlePageChange = useCallback(
         (newPage) => {
             if (!availablePages.has(newPage)) return;
 
+            // Use replace: true to avoid adding to browser history
             setSearchParams((prev) => {
                 prev.set("page", newPage);
                 prev.delete("video"); // Clear current video when changing pages
                 return prev;
-            });
+            }, { replace: true });
             fetchVideos(newPage);
             setCurrentVideo(null);
         },
         [fetchVideos, setSearchParams, availablePages]
     );
+
+    // Improved back button handler
+    const handleBackClick = useCallback(() => {
+        // Check if we have parameters in the URL that we can clear first
+        const hasVideoParam = searchParams.get("video");
+        const hasPageParam = searchParams.get("page");
+        
+        // If we're on a specific video or page, go to the base level page first
+        // if (hasVideoParam || (hasPageParam && hasPageParam !== "1")) {
+        //     // Navigate to base level page without params
+        //     navigate(`/business/levels/${levelId}`, { replace: true });
+        // } else {
+            // If no params or already on base page, go back in history
+            if (window.history.length > 1) {
+                navigate(-1);
+            } else {
+                // Fallback: navigate to a default route (adjust as needed)
+                navigate("/levels");
+            // }
+        }
+    }, [navigate, levelId, searchParams]);
 
     // Video event handlers
     const handleVideoLoadedMetadata = useCallback(() => {
@@ -486,6 +518,10 @@ export default function LevelVideosPage() {
                 case "F":
                     toggleFullscreen();
                     break;
+                case "Escape":
+                    // Handle escape key for back navigation
+                    handleBackClick();
+                    break;
                 default:
                     break;
             }
@@ -493,7 +529,7 @@ export default function LevelVideosPage() {
 
         document.addEventListener("keydown", handleKeyPress);
         return () => document.removeEventListener("keydown", handleKeyPress);
-    }, [togglePlay, toggleMute, toggleFullscreen]);
+    }, [togglePlay, toggleMute, toggleFullscreen, handleBackClick]);
 
     // Fullscreen change listener
     useEffect(() => {
@@ -542,7 +578,7 @@ export default function LevelVideosPage() {
                         <Button
                             variant="outline"
                             className="w-full mt-2"
-                            onClick={() => navigate(-1)}
+                            onClick={handleBackClick}
                         >
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Back
@@ -563,7 +599,7 @@ export default function LevelVideosPage() {
                             variant="ghost"
                             size="icon"
                             className="text-white hover:text-orange-500"
-                            onClick={() => navigate(-1)}
+                            onClick={handleBackClick}
                         >
                             <ArrowLeft className="w-5 h-5" />
                         </Button>
