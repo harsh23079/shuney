@@ -541,11 +541,11 @@ export default function LevelVideosPage() {
 
                         <Button
                             variant="outline"
-                            className="w-full"
+                            className="w-full mt-2"
                             onClick={() => navigate(-1)}
                         >
                             <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to Levels
+                            Back
                         </Button>
                     </div>
                 </div>

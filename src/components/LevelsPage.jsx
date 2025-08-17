@@ -17,7 +17,7 @@ import { db } from "../firebase/firebase-config";
 
 export default function LevelsPage() {
     const { creatorTopicId } = useParams(); // Get creatorTopicId from URL params
-    const location = useLocation ();
+    const location = useLocation();
     const buzName = location?.state?.buzName || "Level's";
     const [levels, setLevels] = useState([]);
     const [whatLevels, setWhatLevels] = useState([]);
@@ -350,9 +350,13 @@ export default function LevelsPage() {
                                 </>
                             )}
                         </Button>
-                        <Button variant="outline" className="w-full" onClick={ ()=> navigate(-1)}  >
-                                <ArrowLeft className="w-4 h-4 mr-2" />
-                                Back
+                        <Button
+                            variant="outline"
+                            className="w-full mt-2"
+                            onClick={() => navigate(-1)}
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back
                         </Button>
                     </div>
                 </div>
@@ -378,7 +382,9 @@ export default function LevelsPage() {
                         {/* </Link> */}
                         <div>
                             <h1 className="text-3xl font-bold">
-                                <span className="text-orange-500">{buzName}</span>{" "}
+                                <span className="text-orange-500">
+                                    {buzName}
+                                </span>{" "}
                             </h1>
                             {/* <h1 className="text-3xl font-bold">
                                 <span className="text-orange-500">{topicName}</span>{" "} 

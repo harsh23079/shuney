@@ -114,10 +114,16 @@ const PlaylistGrid = () => {
                         ) : (
                             <>
                                 <RefreshCw className="w-4 h-4 mr-2" /> Try Again
-
-                                
                             </>
                         )}
+                    </Button>
+                    <Button
+                        variant="outline"
+                        className="w-full mt-2"
+                        onClick={() => navigate(-1)}
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back
                     </Button>
                 </div>
             </div>

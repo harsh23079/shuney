@@ -473,11 +473,11 @@ const VideoPlayer = () => {
 
                         <Button
                             variant="outline"
-                            className="w-full"
+                            className="w-full mt-2"
                             onClick={() => navigate(-1)}
                         >
                             <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to Playlists
+                            Back
                         </Button>
                     </div>
                 </div>

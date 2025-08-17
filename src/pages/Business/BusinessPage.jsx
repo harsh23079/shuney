@@ -1,12 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
-import {
-    ArrowLeft,
-    Play,
-    Loader2,
-    RefreshCw,
-} from "lucide-react";
+import { ArrowLeft, Play, Loader2, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "../../components/ui/Card";
 import { useEffect, useState, useCallback, useRef } from "react";
 import {
@@ -95,7 +90,7 @@ export default function BusinessPage() {
             }
             isFetchingRef.current = false;
         }
-    }, []); 
+    }, []);
 
     useEffect(() => {
         mountedRef.current = true;
@@ -166,7 +161,9 @@ export default function BusinessPage() {
                 categoryId: business.categoryId,
                 subCategoryId: business.subCategoryId,
             });
-            navigate(`/business/levels/${business.creatorTopicId}`, { state: { buzName: business.creatorTopicName } });
+            navigate(`/business/levels/${business.creatorTopicId}`, {
+                state: { buzName: business.creatorTopicName },
+            });
         },
         [navigate]
     );
@@ -216,6 +213,14 @@ export default function BusinessPage() {
                                 Try Again
                             </>
                         )}
+                    </Button>
+                    <Button
+                        variant="outline"
+                        className="w-full mt-2"
+                        onClick={() => navigate(-1)}
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back
                     </Button>
                 </div>
             </div>
