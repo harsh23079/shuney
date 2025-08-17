@@ -284,7 +284,7 @@ export default function LevelsPage() {
                                         </h3>
                                         <div className="flex items-center gap-2 text-sm text-gray-400">
                                             <Eye className="w-4 h-4" />
-                                            <span>Level {index + 1}</span>
+                                            <span> {level.levelName}</span>
                                             <span>•</span>
                                             <span className="capitalize">
                                                 {level.sectionType}

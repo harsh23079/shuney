@@ -612,7 +612,7 @@ export default function ReelPage() {
             <div className="fixed top-18 left-0 right-0 flex items-center gap-3 p-4 bg-black z-30">
                 <button
                     onClick={handleBack}
-                    className="text-white hover:text-orange-500 transition-colors p-1"
+                    className="text-white hover:text-orange-500 transition-colors p-2 hover:bg-white hover:rounded-md"
                     aria-label="Go back"
                 >
                     <svg
