@@ -1,9 +1,51 @@
-//"use client";
-
 import { useState, useEffect } from "react";
 import { Play, ChevronLeft, ChevronRight, Info } from "lucide-react";
-import { Button } from "../components/ui/Button";
-import { Badge } from "../components/ui/Badge";
+
+// Custom Button component
+const Button = ({
+    children,
+    size = "default",
+    variant = "default",
+    className = "",
+    onClick,
+    ...props
+}) => {
+    const baseClasses =
+        "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
+
+    const sizeClasses = {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+    };
+
+    const variantClasses = {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        secondary:
+            "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+    };
+
+    return (
+        <button
+            className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
+            onClick={onClick}
+            {...props}
+        >
+            {children}
+        </button>
+    );
+};
+
+// Custom Badge component
+const Badge = ({ children, className = "" }) => {
+    return (
+        <div
+            className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${className}`}
+        >
+            {children}
+        </div>
+    );
+};
 
 export default function HomePage() {
     const [currentHero, setCurrentHero] = useState(0);
@@ -26,7 +68,7 @@ export default function HomePage() {
             subtitle: "Experience the journey",
             description:
                 "A cinematic slow-motion background for better immersion.",
-            backgroundVideo: "/demo.mp4", // replace with your own video link
+            backgroundVideo: "/demo.mp4",
             type: "video",
             badge: "Featured Slow-Mo",
         },
@@ -129,24 +171,22 @@ export default function HomePage() {
         },
     ];
 
+    // Auto-advance carousel
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentHero((prev) => (prev + 1) % heroContent.length);
-        }, 8000);
+        }, 6000); // Changed to 6 seconds for better UX
 
         return () => clearInterval(interval);
-    }, [currentHero, heroContent.length]);
+    }, []); // Removed dependencies to prevent recreation
 
     // Move to next hero
     const nextHero = () => {
-        console.log("right");
         setCurrentHero((prev) => (prev + 1) % heroContent.length);
     };
 
     // Move to previous hero
     const prevHero = () => {
-        console.log("left");
-
         setCurrentHero((prev) =>
             prev === 0 ? heroContent.length - 1 : prev - 1
         );
@@ -155,7 +195,7 @@ export default function HomePage() {
     return (
         <div className="min-h-screen bg-black text-white">
             {/* Hero Section */}
-            <section className="relative h-screen overflow-hidden">
+            <section className="relative h-[800px] overflow-hidden">
                 <div className="absolute inset-0">
                     {heroContent[currentHero].type === "video" ? (
                         <video
@@ -186,59 +226,39 @@ export default function HomePage() {
                 {/* Hero Navigation */}
                 <button
                     onClick={prevHero}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-orange-500 rounded-full p-3 transition-all duration-200 hover:scale-110"
+                    aria-label="Previous slide"
                 >
                     <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
                     onClick={nextHero}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-orange-500 rounded-full p-3 transition-all duration-200 hover:scale-110"
+                    aria-label="Next slide"
                 >
                     <ChevronRight className="w-6 h-6" />
                 </button>
 
                 {/* Hero Content */}
-                <div className="relative z-10 h-full flex items-center">
-                    <div className="container mx-auto px-4 lg:px-8">
-                        <div className="max-w-2xl">
-                            {heroContent[currentHero].badge && (
-                                <Badge className="mb-4 bg-orange-500/20 text-orange-400 border-orange-500/30">
-                                    {heroContent[currentHero].badge}
-                                </Badge>
-                            )}
-
-                            <h1 className="text-5xl lg:text-7xl font-bold mb-4">
-                                <span className="text-orange-500">SHUNYE</span>{" "}
-                                OTT
-                            </h1>
-
-                            <h2 className="text-2xl lg:text-4xl font-bold mb-6 text-gray-200">
-                                {heroContent[currentHero].subtitle}
-                            </h2>
-
-                            <p className="text-lg lg:text-xl text-gray-300 mb-8 max-w-xl leading-relaxed">
-                                {heroContent[currentHero].description}
-                            </p>
-
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <Button
-                                    size="lg"
-                                    className="bg-white text-black hover:bg-gray-200 px-8 py-3 text-lg font-semibold"
-                                >
-                                    <Play className="w-5 h-5 mr-2 fill-current" />
-                                    Watch Now
-                                </Button>
-                                <Button
-                                    size="lg"
-                                    variant="secondary"
-                                    className="bg-gray-600/70 text-white hover:bg-gray-600 px-8 py-3 text-lg font-semibold"
-                                >
-                                    <Info className="w-5 h-5 mr-2" />
-                                    More Info
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
+                <div className="absolute bottom-28 right-8 z-10 flex gap-4">
+                    <Button
+                        size="lg"
+                        className="bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700 px-8 py-3 text-lg font-semibold transition-all duration-200 hover:scale-105"
+                    >
+                        <Play className="w-5 h-5 mr-2 fill-current" />
+                        Watch Now
+                    </Button>
+                    <Button
+                        size="lg"
+                        variant="secondary"
+                        className="bg-gradient-to-r from-gray-600/70 to-gray-700 text-white 
+             hover:from-orange-600 hover:to-red-600 
+             px-8 py-3 text-lg font-semibold border border-gray-500 
+             transition-all duration-200 hover:scale-105"
+                    >
+                        <Info className="w-5 h-5 mr-2" />
+                        More Info
+                    </Button>
                 </div>
 
                 {/* Hero Indicators */}
@@ -247,11 +267,12 @@ export default function HomePage() {
                         <button
                             key={index}
                             onClick={() => setCurrentHero(index)}
-                            className={`w-2 h-2 rounded-full transition-all ${
+                            className={`w-3 h-3 rounded-full transition-all duration-200 ${
                                 index === currentHero
-                                    ? "bg-white"
-                                    : "bg-white/50"
+                                    ? "bg-orange-500 scale-125"
+                                    : "bg-white/50 hover:bg-white/70"
                             }`}
+                            aria-label={`Go to slide ${index + 1}`}
                         />
                     ))}
                 </div>
@@ -272,29 +293,26 @@ export default function HomePage() {
                                         key={itemIndex}
                                         className="flex-none w-64 group cursor-pointer"
                                     >
-                                        <div className="relative overflow-hidden rounded-lg bg-gray-900 transition-transform group-hover:scale-105">
+                                        <div className="relative overflow-hidden rounded-lg bg-gray-900 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
                                             <img
-                                                src={
-                                                    item.image ||
-                                                    "/placeholder.svg"
-                                                }
+                                                src={item.image}
                                                 alt={item.name}
-                                                className="w-full h-36 object-cover"
+                                                className="w-full h-36 object-cover transition-transform duration-300 group-hover:scale-110"
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
                                             {/* Hover overlay */}
-                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <Play className="w-12 h-12 text-white" />
+                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                                <Play className="w-12 h-12 text-white transform scale-0 group-hover:scale-100 transition-transform duration-300" />
                                             </div>
 
                                             <div className="absolute bottom-0 left-0 right-0 p-4">
                                                 <div className="flex items-center justify-between">
-                                                    <h4 className="text-white font-semibold text-sm">
+                                                    <h4 className="text-white font-semibold text-sm group-hover:text-orange-400 transition-colors duration-200">
                                                         {item.name}
                                                     </h4>
                                                     {item.icon && (
-                                                        <span className="text-xl">
+                                                        <span className="text-xl transform group-hover:scale-125 transition-transform duration-200">
                                                             {item.icon}
                                                         </span>
                                                     )}
@@ -313,27 +331,59 @@ export default function HomePage() {
             <section className="py-16 bg-gradient-to-r from-orange-500/10 to-red-500/10">
                 <div className="container mx-auto px-4 lg:px-8">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                        <div className="space-y-2">
-                            <h4 className="text-4xl font-bold text-white">
+                        <div className="space-y-2 group cursor-pointer">
+                            <h4 className="text-4xl font-bold text-white group-hover:text-orange-400 transition-colors duration-200">
                                 1000+
                             </h4>
-                            <p className="text-gray-300">Business Ideas</p>
+                            <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-200">
+                                Business Ideas
+                            </p>
                         </div>
-                        <div className="space-y-2">
-                            <h4 className="text-4xl font-bold text-white">
+                        <div className="space-y-2 group cursor-pointer">
+                            <h4 className="text-4xl font-bold text-white group-hover:text-orange-400 transition-colors duration-200">
                                 50K+
                             </h4>
-                            <p className="text-gray-300">Active Learners</p>
+                            <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-200">
+                                Active Learners
+                            </p>
                         </div>
-                        <div className="space-y-2">
-                            <h4 className="text-4xl font-bold text-white">
+                        <div className="space-y-2 group cursor-pointer">
+                            <h4 className="text-4xl font-bold text-white group-hover:text-orange-400 transition-colors duration-200">
                                 4.8
                             </h4>
-                            <p className="text-gray-300">Average Rating</p>
+                            <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-200">
+                                Average Rating
+                            </p>
                         </div>
                     </div>
                 </div>
             </section>
+
+            <style jsx>{`
+                @keyframes fade-in {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                .animate-fade-in {
+                    animation: fade-in 0.8s ease-out forwards;
+                }
+
+                .scrollbar-hide {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+            `}</style>
         </div>
     );
 }
