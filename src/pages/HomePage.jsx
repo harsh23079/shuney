@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Play, ChevronLeft, ChevronRight, Info } from "lucide-react";
 
@@ -53,46 +55,33 @@ export default function HomePage() {
     const heroContent = [
         {
             id: 1,
-            title: "SHUNYE OTT",
-            subtitle: "चलो BUSINESS सीखें",
-            description:
-                "Start implementing your ideas with our comprehensive business learning platform. Join 50K+ active learners on their entrepreneurial journey.",
-            backgroundImage:
-                "https://images.unsplash.com/photo-1551434678-e076c223a692?w=1920&h=1080&fit=crop",
+            backgroundImage: `public/carousel/001.webp`,
             type: "image",
-            badge: "Every Saturday 11pm - Latest Video",
         },
         {
             id: 2,
-            title: "Slow Motion Launch",
-            subtitle: "Experience the journey",
-            description:
-                "A cinematic slow-motion background for better immersion.",
-            backgroundVideo: "/demo.mp4",
-            type: "video",
-            badge: "Featured Slow-Mo",
+            backgroundImage: `public/carousel/002.webp`,
+            type: "image",
         },
         {
             id: 3,
-            title: "Dharm Yudh",
-            subtitle: "Spiritual Business Journey",
-            description:
-                "Discover the spiritual aspects of entrepreneurship and how dharma guides successful business practices.",
-            backgroundImage:
-                "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1920&h=1080&fit=crop",
+            backgroundImage: `public/carousel/003.webp`,
             type: "image",
-            badge: "Featured Content",
         },
         {
             id: 4,
-            title: "Karm Yudh",
-            subtitle: "Action-Oriented Business",
-            description:
-                "Learn practical business strategies through action-based learning and real-world implementations.",
-            backgroundImage:
-                "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=1920&h=1080&fit=crop",
+            backgroundImage: `public/carousel/004.webp`,
             type: "image",
-            badge: "New Release",
+        },
+        {
+            id: 5,
+            backgroundImage: `public/carousel/005.webp`,
+            type: "image",
+        },
+        {
+            id: 6,
+            backgroundImage: `public/carousel/006.webp`,
+            type: "image",
         },
     ];
 
@@ -175,10 +164,10 @@ export default function HomePage() {
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentHero((prev) => (prev + 1) % heroContent.length);
-        }, 6000); // Changed to 6 seconds for better UX
+        }, 6000);
 
         return () => clearInterval(interval);
-    }, []); // Removed dependencies to prevent recreation
+    }, []);
 
     // Move to next hero
     const nextHero = () => {
@@ -194,8 +183,8 @@ export default function HomePage() {
 
     return (
         <div className="min-h-screen bg-black text-white">
-            {/* Hero Section */}
-            <section className="relative h-[800px] overflow-hidden">
+            {/* Hero Section - Made responsive with viewport height and proper mobile scaling */}
+            <section className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[90vh] overflow-hidden">
                 <div className="absolute inset-0">
                     {heroContent[currentHero].type === "video" ? (
                         <video
@@ -213,61 +202,65 @@ export default function HomePage() {
                         <img
                             src={
                                 heroContent[currentHero].backgroundImage ||
+                                "/placeholder.svg" ||
                                 "/placeholder.svg"
                             }
-                            alt={heroContent[currentHero].title}
-                            className="w-full h-full object-cover"
+                            alt={
+                                heroContent[currentHero].title ||
+                                `Slide ${currentHero + 1}`
+                            }
+                            className="w-full h-full object-cover object-center"
                         />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 </div>
 
-                {/* Hero Navigation */}
+                {/* Hero Navigation - Made responsive with smaller buttons on mobile */}
                 <button
                     onClick={prevHero}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-orange-500 rounded-full p-3 transition-all duration-200 hover:scale-110"
+                    className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-orange-500 rounded-full p-2 sm:p-3 transition-all duration-200 hover:scale-110"
                     aria-label="Previous slide"
                 >
-                    <ChevronLeft className="w-6 h-6" />
+                    <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
                 </button>
                 <button
                     onClick={nextHero}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-orange-500 rounded-full p-3 transition-all duration-200 hover:scale-110"
+                    className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 hover:bg-orange-500 rounded-full p-2 sm:p-3 transition-all duration-200 hover:scale-110"
                     aria-label="Next slide"
                 >
-                    <ChevronRight className="w-6 h-6" />
+                    <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
                 </button>
 
-                {/* Hero Content */}
-                <div className="absolute bottom-28 right-8 z-10 flex gap-4">
+                {/* Hero Content - Made responsive positioning and button sizes */}
+                <div className="absolute bottom-16 sm:bottom-20 md:bottom-28 right-4 sm:right-8 z-10 flex flex-col sm:flex-row gap-2 sm:gap-4">
                     <Button
                         size="lg"
-                        className="bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700 px-8 py-3 text-lg font-semibold transition-all duration-200 hover:scale-105"
+                        className="bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700 px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg font-semibold transition-all duration-200 hover:scale-105"
                     >
-                        <Play className="w-5 h-5 mr-2 fill-current" />
+                        <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 fill-current" />
                         Watch Now
                     </Button>
                     <Button
                         size="lg"
                         variant="secondary"
-                        className="bg-gradient-to-r from-gray-600/70 to-gray-700 text-white 
-             hover:from-orange-600 hover:to-red-600 
-             px-8 py-3 text-lg font-semibold border border-gray-500 
+                        className="bg-gray-800/90 text-white border border-gray-600
+             hover:bg-gradient-to-r hover:from-orange-600 hover:to-red-600 hover:border-orange-500
+             px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg font-semibold 
              transition-all duration-200 hover:scale-105"
                     >
-                        <Info className="w-5 h-5 mr-2" />
+                        <Info className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
                         More Info
                     </Button>
                 </div>
 
-                {/* Hero Indicators */}
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+                {/* Hero Indicators - Made responsive sizing */}
+                <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
                     {heroContent.map((_, index) => (
                         <button
                             key={index}
                             onClick={() => setCurrentHero(index)}
-                            className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-200 ${
                                 index === currentHero
                                     ? "bg-orange-500 scale-125"
                                     : "bg-white/50 hover:bg-white/70"
@@ -278,41 +271,44 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* Content Rows */}
-            <div className="relative z-20 -mt-32 pb-16">
+            {/* Content Rows - Adjusted negative margin for responsive design */}
+            <div className="relative z-20 -mt-16 sm:-mt-24 md:-mt-32 pb-16">
                 {contentRows.map((row, rowIndex) => (
-                    <div key={rowIndex} className="mb-12">
+                    <div key={rowIndex} className="mb-8 sm:mb-12">
                         <div className="container mx-auto px-4 lg:px-8">
-                            <h3 className="text-2xl font-bold mb-6 text-white">
+                            <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">
                                 {row.title}
                             </h3>
 
-                            <div className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4">
+                            <div className="flex space-x-3 sm:space-x-4 overflow-x-auto scrollbar-hide pb-4">
                                 {row.items.map((item, itemIndex) => (
                                     <div
                                         key={itemIndex}
-                                        className="flex-none w-64 group cursor-pointer"
+                                        className="flex-none w-48 sm:w-56 md:w-64 group cursor-pointer"
                                     >
                                         <div className="relative overflow-hidden rounded-lg bg-gray-900 transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
                                             <img
-                                                src={item.image}
+                                                src={
+                                                    item.image ||
+                                                    "/placeholder.svg"
+                                                }
                                                 alt={item.name}
-                                                className="w-full h-36 object-cover transition-transform duration-300 group-hover:scale-110"
+                                                className="w-full h-28 sm:h-32 md:h-36 object-cover transition-transform duration-300 group-hover:scale-110"
                                             />
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
                                             {/* Hover overlay */}
                                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                                <Play className="w-12 h-12 text-white transform scale-0 group-hover:scale-100 transition-transform duration-300" />
+                                                <Play className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white transform scale-0 group-hover:scale-100 transition-transform duration-300" />
                                             </div>
 
-                                            <div className="absolute bottom-0 left-0 right-0 p-4">
+                                            <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-4">
                                                 <div className="flex items-center justify-between">
-                                                    <h4 className="text-white font-semibold text-sm group-hover:text-orange-400 transition-colors duration-200">
+                                                    <h4 className="text-white font-semibold text-xs sm:text-sm group-hover:text-orange-400 transition-colors duration-200">
                                                         {item.name}
                                                     </h4>
                                                     {item.icon && (
-                                                        <span className="text-xl transform group-hover:scale-125 transition-transform duration-200">
+                                                        <span className="text-lg sm:text-xl transform group-hover:scale-125 transition-transform duration-200">
                                                             {item.icon}
                                                         </span>
                                                     )}
@@ -327,31 +323,31 @@ export default function HomePage() {
                 ))}
             </div>
 
-            {/* Stats Section */}
-            <section className="py-16 bg-gradient-to-r from-orange-500/10 to-red-500/10">
+            {/* Stats Section - Made responsive text sizing */}
+            <section className="py-12 sm:py-16 bg-gradient-to-r from-orange-500/10 to-red-500/10">
                 <div className="container mx-auto px-4 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-center">
                         <div className="space-y-2 group cursor-pointer">
-                            <h4 className="text-4xl font-bold text-white group-hover:text-orange-400 transition-colors duration-200">
+                            <h4 className="text-3xl sm:text-4xl font-bold text-white group-hover:text-orange-400 transition-colors duration-200">
                                 1000+
                             </h4>
-                            <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-200">
+                            <p className="text-sm sm:text-base text-gray-300 group-hover:text-gray-200 transition-colors duration-200">
                                 Business Ideas
                             </p>
                         </div>
                         <div className="space-y-2 group cursor-pointer">
-                            <h4 className="text-4xl font-bold text-white group-hover:text-orange-400 transition-colors duration-200">
+                            <h4 className="text-3xl sm:text-4xl font-bold text-white group-hover:text-orange-400 transition-colors duration-200">
                                 50K+
                             </h4>
-                            <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-200">
+                            <p className="text-sm sm:text-base text-gray-300 group-hover:text-gray-200 transition-colors duration-200">
                                 Active Learners
                             </p>
                         </div>
                         <div className="space-y-2 group cursor-pointer">
-                            <h4 className="text-4xl font-bold text-white group-hover:text-orange-400 transition-colors duration-200">
+                            <h4 className="text-3xl sm:text-4xl font-bold text-white group-hover:text-orange-400 transition-colors duration-200">
                                 4.8
                             </h4>
-                            <p className="text-gray-300 group-hover:text-gray-200 transition-colors duration-200">
+                            <p className="text-sm sm:text-base text-gray-300 group-hover:text-gray-200 transition-colors duration-200">
                                 Average Rating
                             </p>
                         </div>
