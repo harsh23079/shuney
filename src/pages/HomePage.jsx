@@ -13,7 +13,7 @@ const Button = ({
     ...props
 }) => {
     const baseClasses =
-        "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
+        "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2  focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
 
     const sizeClasses = {
         default: "h-10 px-4 py-2",
@@ -55,34 +55,39 @@ export default function HomePage() {
     const heroContent = [
         {
             id: 1,
-            backgroundImage: `public/carousel/001.webp`,
+            backgroundImage: `carousel/001.jpg`,
             type: "image",
         },
-        {
-            id: 2,
-            backgroundImage: `public/carousel/002.webp`,
-            type: "image",
-        },
-        {
-            id: 3,
-            backgroundImage: `public/carousel/003.webp`,
-            type: "image",
-        },
-        {
-            id: 4,
-            backgroundImage: `public/carousel/004.webp`,
-            type: "image",
-        },
-        {
-            id: 5,
-            backgroundImage: `public/carousel/005.webp`,
-            type: "image",
-        },
-        {
-            id: 6,
-            backgroundImage: `public/carousel/006.webp`,
-            type: "image",
-        },
+        // {
+        //     id: 1,
+        //     backgroundImage: `carousel/001.webp`,
+        //     type: "image",
+        // },
+        // {
+        //     id: 2,
+        //     backgroundImage: `carousel/002.webp`,
+        //     type: "image",
+        // },
+        // {
+        //     id: 3,
+        //     backgroundImage: `carousel/003.webp`,
+        //     type: "image",
+        // },
+        // {
+        //     id: 4,
+        //     backgroundImage: `carousel/004.webp`,
+        //     type: "image",
+        // },
+        // {
+        //     id: 5,
+        //     backgroundImage: `carousel/005.webp`,
+        //     type: "image",
+        // },
+        // {
+        //     id: 6,
+        //     backgroundImage: `carousel/006.webp`,
+        //     type: "image",
+        // },
     ];
 
     const contentRows = [
@@ -184,7 +189,7 @@ export default function HomePage() {
     return (
         <div className="min-h-screen bg-black text-white">
             {/* Hero Section - Made responsive with viewport height and proper mobile scaling */}
-            <section className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[90vh] overflow-hidden">
+            <section className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh] xl:h-[87vh]  overflow-hidden">
                 <div className="absolute inset-0">
                     {heroContent[currentHero].type === "video" ? (
                         <video
@@ -233,7 +238,7 @@ export default function HomePage() {
                 </button>
 
                 {/* Hero Content - Made responsive positioning and button sizes */}
-                <div className="absolute bottom-16 sm:bottom-20 md:bottom-28 right-4 sm:right-8 z-10 flex flex-col sm:flex-row gap-2 sm:gap-4">
+                <div className="absolute bottom-16 sm:bottom-20 md:bottom-40 left-20 sm:right-8 z-10 flex flex-col sm:flex-row gap-2 sm:gap-4">
                     <Button
                         size="lg"
                         className="bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700 px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg font-semibold transition-all duration-200 hover:scale-105"
