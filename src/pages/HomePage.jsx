@@ -238,21 +238,37 @@ export default function HomePage() {
                 </button>
 
                 {/* Hero Content - Made responsive positioning and button sizes */}
-                <div className="absolute bottom-16 sm:bottom-20 md:bottom-40 left-20 sm:right-8 z-10 flex flex-col sm:flex-row gap-2 sm:gap-4">
+                <div
+                    className="
+        absolute 
+        bottom-20 left-1/2 -translate-x-1/2
+        flex flex-col sm:flex-row gap-2 sm:gap-4 
+        w-[90%] sm:w-auto justify-center
+        md:left-20 md:bottom-40 md:translate-x-0
+    "
+                >
                     <Button
                         size="lg"
-                        className="bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700 px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg font-semibold transition-all duration-200 hover:scale-105"
+                        className="bg-gradient-to-r from-orange-500 to-red-600 text-white 
+                   hover:from-orange-600 hover:to-red-700 
+                   px-4 sm:px-6 md:px-8 
+                   py-2 sm:py-2.5 md:py-3 
+                   text-sm sm:text-base md:text-lg font-semibold 
+                   transition-all duration-200 hover:scale-105 w-full sm:w-auto"
                     >
                         <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 fill-current" />
                         Watch Now
                     </Button>
+
                     <Button
                         size="lg"
                         variant="secondary"
                         className="bg-gray-800/90 text-white border border-gray-600
-             hover:bg-gradient-to-r hover:from-orange-600 hover:to-red-600 hover:border-orange-500
-             px-4 sm:px-8 py-2 sm:py-3 text-sm sm:text-lg font-semibold 
-             transition-all duration-200 hover:scale-105"
+                   hover:bg-gradient-to-r hover:from-orange-600 hover:to-red-600 hover:border-orange-500
+                   px-4 sm:px-6 md:px-8 
+                   py-2 sm:py-2.5 md:py-3 
+                   text-sm sm:text-base md:text-lg font-semibold
+                   transition-all duration-200 hover:scale-105 w-full sm:w-auto"
                     >
                         <Info className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
                         More Info

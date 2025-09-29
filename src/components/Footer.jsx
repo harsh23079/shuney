@@ -15,9 +15,9 @@ export function Footer() {
         <footer className="bg-black border-t border-gray-800 text-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Main Footer Content */}
-                <div className="py-12 flex justify-between gap-8 items-start text-center">
+                <div className="py-12 flex flex-col md:flex-row md:justify-between gap-12 md:gap-8 items-center md:items-start text-center md:text-left">
                     {/* Brand Section */}
-                    <div className="space-y-4 flex flex-col">
+                    <div className="space-y-4 flex flex-col items-center md:items-start">
                         <Link to="/" className="flex items-center space-x-2">
                             <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-xl">
                                 <Play className="w-6 h-6 text-white" />
@@ -29,12 +29,12 @@ export function Footer() {
                                 OTT
                             </span>
                         </Link>
-                        <p className="text-gray-400 text-sm leading-relaxed">
+                        <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
                             Empowering learners with comprehensive business
-                            skills <br></br> and creative content. Start your
+                            skills  and creative content. Start your
                             journey to success today.
                         </p>
-                        <div className="flex space-x-4 ">
+                        <div className="flex space-x-4">
                             <a
                                 href="https://www.linkedin.com/in/varun-sharma-b90753246/"
                                 className="w-10 h-10 bg-gray-800 hover:bg-orange-500 rounded-full flex items-center justify-center transition-colors duration-200"
@@ -67,11 +67,11 @@ export function Footer() {
                     </div>
 
                     {/* Quick Links */}
-                    <div className="space-y-4 flex flex-col items-center">
+                    <div className="space-y-4 flex flex-col items-center md:items-start">
                         <h3 className="text-lg font-semibold text-orange-500">
                             Quick Links
                         </h3>
-                        <ul className="space-y-2 flex flex-col items-center">
+                        <ul className="space-y-2 flex flex-col items-center md:items-start">
                             <li>
                                 <Link
                                     to="/services"
@@ -100,7 +100,7 @@ export function Footer() {
                     </div>
 
                     {/* Contact Info */}
-                    <div className="space-y-4 flex flex-col items-center">
+                    <div className="space-y-4 flex flex-col items-center md:items-start">
                         <h3 className="text-lg font-semibold text-orange-500">
                             Contact Us
                         </h3>
