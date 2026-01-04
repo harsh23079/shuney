@@ -327,7 +327,7 @@ const PostCard = React.forwardRef(({ post }, ref) => {
                     <div>
                         <div className="flex items-center space-x-2">
                             <span className="font-semibold text-sm">
-                                {post.title || "ShunyeOTT Content"}
+                                {post.title || "Startup Kroo Content"}
                             </span>
                         </div>
                     </div>

@@ -24,9 +24,9 @@ export function Footer() {
                             </div>
                             <span className="text-xl font-bold">
                                 <span className="text-xl font-bold text-orange-500">
-                                    Shunye
+                                    Startup
                                 </span>{" "}
-                                OTT
+                                Kroo
                             </span>
                         </Link>
                         <p className="text-gray-400 text-sm leading-relaxed max-w-xs">

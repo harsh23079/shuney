@@ -442,8 +442,8 @@ export default function LoginPage() {
                             <Play className="h-8 w-8 text-white fill-white" />
                         </div>
                         <div className="text-3xl font-bold">
-                            <span className="text-orange-500">Shunye</span>{" "}
-                            <span className="text-white">OTT</span>
+                            <span className="text-orange-500">Startup</span>{" "}
+                            <span className="text-white">Kroo</span>
                         </div>
                     </div>
                     <h1 className="text-2xl font-bold text-white">
@@ -645,7 +645,7 @@ export default function LoginPage() {
 
                 <div className="text-center mt-6">
                     <p className="text-gray-400 text-sm">
-                        Join thousands learning business with Shunye OTT
+                        Join thousands learning business with Startup Kroo
                     </p>
                 </div>
             </div>

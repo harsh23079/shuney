@@ -18,7 +18,7 @@ export function Header() {
                             <Play className="w-6 h-6 text-white" />
                         </div>
                         <h1 className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">
-                            <span className="text-orange-500">Shunye</span> OTT
+                            <span className="text-orange-500">Startup</span> Kroo
                         </h1>
                     </Link>
 
