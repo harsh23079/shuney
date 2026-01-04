@@ -6,7 +6,6 @@ import {
     Mail,
     Phone,
     MapPin,
-    Play,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -19,9 +18,14 @@ export function Footer() {
                     {/* Brand Section */}
                     <div className="space-y-4 flex flex-col items-center md:items-start">
                         <Link to="/" className="flex items-center space-x-2">
-                            <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-xl">
+                            {/* <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-xl">
                                 <Play className="w-6 h-6 text-white" />
-                            </div>
+                            </div> */}
+                            <img 
+                                src="/icon.png" 
+                                alt="Startup Kroo" 
+                                className="w-10 h-10 rounded-2xl shadow-lg shadow-orange-500/50 transition-transform hover:scale-105" 
+                            />
                             <span className="text-xl font-bold">
                                 <span className="text-xl font-bold text-orange-500">
                                     Startup

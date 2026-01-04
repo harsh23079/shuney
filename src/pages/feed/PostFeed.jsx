@@ -321,9 +321,14 @@ const PostCard = React.forwardRef(({ post }, ref) => {
             {/* Post Header */}
             <div className="px-4 py-3 flex items-center w-96 justify-between">
                 <div className="flex items-center space-x-3">
-                    <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-full">
+                    {/* <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-full">
                         <Play className="w-4 h-4 text-white" />
-                    </div>
+                    </div> */}
+                    <img 
+                        src="/icon.png" 
+                        alt="Startup Kroo" 
+                        className="w-10 h-10 rounded-2xl shadow-lg shadow-orange-500/50 transition-transform hover:scale-105" 
+                    />
                     <div>
                         <div className="flex items-center space-x-2">
                             <span className="font-semibold text-sm">

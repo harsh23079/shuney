@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    Play,
     ArrowLeft,
     User,
     Briefcase,
@@ -438,9 +437,14 @@ export default function LoginPage() {
                 {/* Logo */}
                 <div className="text-center mb-8">
                     <div className="flex items-center justify-center gap-3 mb-4">
-                        <div className="bg-orange-500 p-3 rounded-lg">
+                        {/* <div className="bg-orange-500 p-3 rounded-lg">
                             <Play className="h-8 w-8 text-white fill-white" />
-                        </div>
+                        </div> */}
+                        <img 
+                            src="/icon.png" 
+                            alt="Startup Kroo" 
+                            className="w-12 h-12 rounded-2xl shadow-xl shadow-orange-500/50 transition-transform hover:scale-105" 
+                        />
                         <div className="text-3xl font-bold">
                             <span className="text-orange-500">Startup</span>{" "}
                             <span className="text-white">Kroo</span>

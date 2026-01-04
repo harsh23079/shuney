@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Play, Settings, LogIn } from "lucide-react";
+import { Settings, LogIn } from "lucide-react";
 import { Button } from "./ui/Button";
 
 export function Header() {
@@ -14,9 +14,14 @@ export function Header() {
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2 sm:gap-3">
-                        <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-xl">
+                        {/* <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-xl">
                             <Play className="w-6 h-6 text-white" />
-                        </div>
+                        </div> */}
+                        <img 
+                            src="/icon.png" 
+                            alt="Startup Kroo" 
+                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl shadow-lg shadow-orange-500/50 transition-transform hover:scale-105" 
+                        />
                         <h1 className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap">
                             <span className="text-orange-500">Startup</span> Kroo
                         </h1>
