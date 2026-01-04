@@ -1,5 +1,5 @@
 specVersion: "v1"
-serviceId: "shuney"
+serviceId: "startup-karo"
 location: "us-central1"
 schema:
   source: "./schema"
@@ -7,6 +7,6 @@ schema:
     postgresql:
       database: "fdcdb"
       cloudSql:
-        instanceId: "shuney-fdc"
+        instanceId: "startup-karo-fdc"
       # schemaValidation: "COMPATIBLE"
 connectorDirs: ["./connector"]
